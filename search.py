@@ -1,13 +1,3 @@
-import json
-import os
-import requests 
-from dotenv import load_dotenv
-
-load_dotenv()
-
-BASE_URL = os.environ["QWEN_BASE_URL"].rstrip("/")
-MODEL = os.environ["QWEN_MODEL"]
-
 DOCUMENTS = {
     "doc_1": {
         "title": "PaperParse: input support",
@@ -54,7 +44,7 @@ def search_sources(query: str) -> dict:
     return {"results": matches[:3]}
 
 def read_source(source_id: str) -> dict:
-    """Read a document using its stabloe source identifier"""
+    """Read a document using its stable source identifier."""
     document = DOCUMENTS.get(source_id)
     if document is None:
         return {

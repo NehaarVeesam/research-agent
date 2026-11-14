@@ -2,7 +2,7 @@
 
 A Python research-agent project focused on inspectable tool execution, structured evidence, and auditable reports.
 
-**Status:** early learning and implementation milestone. The current scripts use fictional local documents and a hosted Qwen endpoint. MCP integration, semantic claim verification, persistent state, and benchmarking are planned, not implemented.
+**Status:** early learning and implementation milestone. The current scripts use fictional local documents, a hosted Qwen endpoint, and a local MCP server over stdio. Semantic claim verification, persistent state, and benchmarking remain planned.
 
 ## Project goal
 
@@ -12,8 +12,9 @@ The project grows incrementally: understand a concept, implement it, inspect its
 
 ## Current implementation
 
-- Model-directed selection of two local tools: `search_sources` and `read_source`.
-- Explicit tool allowlist and argument validation before execution.
+- MCP discovery of two tools: `search_sources` and `read_source`.
+- Translation of MCP tool definitions into Qwen's chat-completion tool format.
+- Explicit client-side tool allowlist and JSON-object argument checks; tool schema validation is handled by the server SDK.
 - A conversation loop that returns tool observations to the model.
 - Configurable model-call and tool-call limits.
 - In-memory tool traces, including the model-call number.
@@ -31,7 +32,7 @@ Question + tool definitions
           v
     Hosted Qwen model
           |
-          +-- Tool requests --> Validate --> Execute local tools
+          +-- Tool requests --> MCP adapter --> MCP stdio server
           |                                      |
           |                         Append results to conversation
           |                                      |
@@ -50,7 +51,12 @@ The model proposes actions. Python validates and executes them, records observat
 
 ```text
 .
-├── agent.py                  # Model requests, tool schemas, controller, trace, validation
+├── agent.py                  # Model requests, MCP lifecycle, controller, trace, validation
+├── mcp_tools.py              # Discovery adapter, allowlist, invocation, result decoding
+├── mcp_server.py             # Exposes the search/read tools over stdio
+├── check_mcp.py              # Real MCP discovery and invocation smoke check
+├── check_validation.py       # Schema and source-reference validation exercises
+├── check_agent.py            # Real MCP loop with simulated model responses
 ├── search.py                 # Fictional documents and local search/read functions
 ├── schemas.py                # Pydantic report and evidence contracts
 ├── requirements.txt          # Python dependencies
@@ -83,7 +89,7 @@ QWEN_API_KEY=
 
 The endpoint must support OpenAI-compatible `POST /v1/chat/completions` requests, function tool definitions, assistant tool calls, and tool-result messages. A `/v1` base URL alone does not guarantee these capabilities.
 
-**Current authentication limitation:** `agent.py` reads `QWEN_API_KEY` but does not attach it to HTTP requests. An endpoint requiring bearer authentication needs that header added before use.
+If configured, `QWEN_API_KEY` is sent as a bearer token. The local document server does not require model credentials.
 
 Keep `.env` local. It is excluded by `.gitignore`; share `.env.example` as the configuration template.
 
@@ -92,6 +98,18 @@ Keep `.env` local. It is excluded by `.gitignore`; share `.env.example` as the c
 ```bash
 python agent.py
 ```
+
+The application launches the local MCP server automatically and keeps its connection open for the run. No separate terminal or HTTP port is needed. Blocking model HTTP requests run in a worker thread so the event loop can service MCP communication; tool calls remain sequential.
+
+## Local checks
+
+```bash
+python check_validation.py
+python check_mcp.py
+python check_agent.py
+```
+
+These checks do not call the model endpoint. `check_agent.py` substitutes deterministic model responses while exercising the real MCP subprocess, conversation history, report validation, and call limits. Currently, importing `agent.py` still requires the model configuration variables in `.env`.
 
 The question is currently defined in the `__main__` block of `agent.py`. Edit that question to try another task over the same fictional collection.
 
@@ -112,7 +130,9 @@ A genuine quote can still be attached to an unsupported claim. `status: answered
 
 ## Current limitations
 
-- No external search, MCP protocol exchange, explicit planner, or persistent storage.
+- No external search, independent third-party MCP server integration, explicit planner, or persistent storage.
+- MCP result decoding currently expects JSON objects for this project's tools, not arbitrary multimodal results.
+- Connection-level failures can propagate as exceptions; comprehensive recovery and malformed-response handling remain future work.
 - Search uses simple keyword matching over three local documents and returns their full text as snippets.
 - Structured JSON is requested through prompting, then validated locally; invalid reports are not automatically repaired.
 - Exact quote matching is sensitive to whitespace and punctuation differences.
@@ -123,7 +143,7 @@ A genuine quote can still be attached to an unsupported claim. `status: answered
 ## Roadmap
 
 1. Validate the basic tool loop and structured-report behavior.
-2. Add real MCP client/server integration and external retrieval.
+2. Extend the local MCP integration with external retrieval and an independently maintained server.
 3. Introduce explicit research tasks, evidence records, and adaptive planning.
 4. Assess claim support, missing evidence, and contradictions.
 5. Add persistence, checkpoints, bounded retries, and operational tracing.

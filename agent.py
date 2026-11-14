@@ -1,13 +1,16 @@
 import json
 import os
+import asyncio
 from pathlib import Path
+import sys
 
 import requests
 from dotenv import load_dotenv
-
-from search import read_source, search_sources
 from pydantic import ValidationError
 from schemas import ResearchReport
+
+from mcp import Client, StdioServerParameters
+from mcp_tools import discover_model_tools, execute_mcp_tool
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 
@@ -16,87 +19,10 @@ BASE_URL = os.environ["QWEN_BASE_URL"].rstrip("/")
 MODEL = os.environ["QWEN_MODEL"]
 API_KEY = os.getenv("QWEN_API_KEY", "")
 
-
-TOOLS = [
-    {
-        "type": "function",
-        "function":{
-            "name": "search_sources",
-            "description": (
-                "Search the fictional document collection."
-                "Returns candidate source IDs, titles and snippets."
-            ),
-            "parameters":{
-                "type": "object",
-                "properties":{
-                    "query": {
-                        "type": "string",
-                        "description": "Keywords describing the information needed."
-                    }
-                },
-            "required": ["query"],
-            "additionalProperties": False,
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "read_source",
-            "description": (
-                "Read the full text of a source using its source_id. "
-                "Read sources before using them to support an answer."
-            ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "source_id": {
-                        "type": "string",
-                        "description": "A source ID returned by search_sources.",
-                    }
-                },
-                "required": ["source_id"],
-                "additionalProperties": False,
-            },
-        },
-    },  
-]
-
-TOOL_REGISTRY = {
-    "search_sources": (search_sources, "query"),
-    "read_source": (read_source, "source_id"),
-}
-
-
-def execute_tool(name: str, raw_arguments:str) -> dict:
-    """Validate the request and execute only an allowed tool."""
-    registered = TOOL_REGISTRY.get(name)
-    if registered is None:
-        return {"error": "unknown_tool", "tool": name}
-
-    try:
-        arguments = json.loads(raw_arguments)
-    except (json.JSONDecodeError, TypeError):
-        return {"error": "invalid_json_arguments"}
-
-    function, argument_name = registered
-
-    if not isinstance(arguments, dict):
-        return {"error": "arguments_must_be_an_object"}
-
-    if set(arguments) != {argument_name}:
-        return {"error": "invalid_argument_keys"} 
-
-    value = arguments[argument_name]
-
-    if not isinstance(value, str) or not value.strip():
-        return {"error": "argument_must_be_a_nonempty_string"}
-
-    return function(**arguments)
-
-
-def call_model(messages: list[dict]) -> dict:
+def call_model(messages: list[dict], tools: list[dict]) -> dict:
     headers = {"Content-Type": "application/json"}
+    if API_KEY:
+        headers["Authorization"] = f"Bearer {API_KEY}"
 
     response = requests.post(
         f"{BASE_URL}/chat/completions",
@@ -104,7 +30,7 @@ def call_model(messages: list[dict]) -> dict:
         json = {
             "model": MODEL,
             "messages": messages,
-            "tools": TOOLS,
+            "tools": tools,
             "tool_choice": "auto",
             "temperature": 0,
         },
@@ -158,10 +84,12 @@ def validate_evidence_references(
 
     return errors
 
-def run_agent(
-    question:str,
-    max_model_calls: int=6,
-    max_tool_calls: int=8
+async def run_research_loop(
+    client: Client,
+    tools: list[dict],
+    question: str,
+    max_model_calls: int = 6,
+    max_tool_calls: int = 8,
 ) -> dict:
     report_schema = json.dumps(ResearchReport.model_json_schema())
     messages = [
@@ -190,7 +118,7 @@ def run_agent(
 
     for model_count in range(1, max_model_calls + 1):
         try:
-            reply = call_model(messages)
+            reply = await asyncio.to_thread(call_model, messages, tools)
         except (requests.RequestException, KeyError, IndexError, ValueError) as exc:
             return {
                 "status": "failed",
@@ -265,12 +193,13 @@ def run_agent(
             name = tool_call["function"]["name"]
             arguments = tool_call["function"]["arguments"]
 
-            result = execute_tool(name, arguments)
+            result = await execute_mcp_tool(client, name, arguments)
             tool_count += 1
 
             trace.append({
                 "model_call": model_count,
                 "step": tool_count,
+                "transport": "mcp_stdio",
                 "tool": name,
                 "arguments": arguments,
                 "result": result,
@@ -287,11 +216,41 @@ def run_agent(
         "trace": trace,
     }
 
+async def run_agent(
+    question: str,
+    max_model_calls: int = 6,
+    max_tool_calls: int = 8,
+) -> dict:
+    server_parameters = StdioServerParameters(
+        command=sys.executable,
+        args=[str(PROJECT_ROOT / "mcp_server.py")],
+    )
+
+    async with Client(server_parameters) as client:
+        tools = await discover_model_tools(client)
+
+        if not tools:
+            return {
+                "status": "failed",
+                "reason": "no_allowed_tools_discovered",
+                "trace": [],
+            }
+
+        return await run_research_loop(
+            client=client,
+            tools=tools,
+            question=question,
+            max_model_calls=max_model_calls,
+            max_tool_calls=max_tool_calls,
+        )
+
 if __name__ == "__main__":
-    result = run_agent(
-        "Compare PaperParse and VisionPages for scanned PDFs with tables. "
-        "Explain their limitations and whether the evidence establishes "
-        "which library is more accurate."
+    result = asyncio.run(
+        run_agent(
+            "Compare PaperParse and VisionPages for scanned PDFs "
+            "with tables. Explain their limitations and whether "
+            "the evidence establishes which library is more accurate."
+        )
     )
 
     print(json.dumps(result, indent=2))

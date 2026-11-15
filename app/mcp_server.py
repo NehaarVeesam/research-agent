@@ -1,7 +1,7 @@
 from mcp.server import MCPServer
 
-from search import read_source as local_read_source
-from search import search_sources as local_search_sources
+from app.search import read_source as local_read_source
+from app.search import search_sources as local_search_sources
 
 server = MCPServer("Research Sources")
 

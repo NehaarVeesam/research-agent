@@ -5,15 +5,16 @@ from pathlib import Path
 
 from mcp.types import TextContent
 from mcp import Client, StdioServerParameters
-from mcp_tools import discover_model_tools, execute_mcp_tool
+from app.mcp_tools import discover_model_tools, execute_mcp_tool
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 async def main():
     server_parameters = StdioServerParameters(
         command=sys.executable,
-        args=[str(PROJECT_ROOT / "mcp_server.py")],
+        args=["-m", "app.mcp_server"],
+        cwd=str(PROJECT_ROOT),
     )
 
     async with Client(server_parameters) as client:

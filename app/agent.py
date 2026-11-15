@@ -7,12 +7,13 @@ import sys
 import requests
 from dotenv import load_dotenv
 from pydantic import ValidationError
-from schemas import ResearchReport
+from app.schemas import ResearchReport
 
 from mcp import Client, StdioServerParameters
-from mcp_tools import discover_model_tools, execute_mcp_tool
+from app.mcp_tools import discover_model_tools, execute_mcp_tool
+from app.validation import validate_evidence_references
 
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 load_dotenv(PROJECT_ROOT / ".env")
 BASE_URL = os.environ["QWEN_BASE_URL"].rstrip("/")
@@ -41,48 +42,6 @@ def call_model(messages: list[dict], tools: list[dict]) -> dict:
 
     return response.json()["choices"][0]["message"]
 
-
-def validate_evidence_references(
-    report: ResearchReport,
-    trace: list[dict],
-) -> list[str]:
-    read_sources = {}
-
-    for event in trace:
-        if event["tool"] != "read_source":
-            continue
-
-        result = event["result"]
-
-        if "error" in result:
-            continue
-
-        read_sources[result["source_id"]] = result["text"]
-    
-    errors = []
-
-    for finding_index, finding in enumerate(report.findings, start=1):
-        for reference in finding.evidence:
-            source_text = read_sources.get(reference.source_id)
-
-            if source_text is None:
-                errors.append(
-                    f"Finding {finding_index}: source "
-                    f"{reference.source_id!r} was not successfully read."
-                )
-                continue
-
-            if not reference.quote.strip():
-                errors.append(
-                    f"Finding {finding_index}: quote contains only whitespace."
-                )
-            elif reference.quote not in source_text:
-                errors.append(
-                    f"Finding {finding_index}: quote does not occur "
-                    f"in source {reference.source_id!r}."
-                )
-
-    return errors
 
 async def run_research_loop(
     client: Client,
@@ -223,7 +182,8 @@ async def run_agent(
 ) -> dict:
     server_parameters = StdioServerParameters(
         command=sys.executable,
-        args=[str(PROJECT_ROOT / "mcp_server.py")],
+        args=["-m", "app.mcp_server"],
+        cwd=str(PROJECT_ROOT),
     )
 
     async with Client(server_parameters) as client:

@@ -4,8 +4,8 @@ import json
 import unittest
 from unittest.mock import patch
 
-from agent import run_agent
-from search import read_source
+from app.agent import run_agent
+from app.search import read_source
 
 
 def tool_request():
@@ -54,7 +54,7 @@ class AgentChecks(unittest.IsolatedAsyncioTestCase):
                 }),
             }
 
-        with patch("agent.call_model", side_effect=simulated_model):
+        with patch("app.agent.call_model", side_effect=simulated_model):
             result = await run_agent("Explain scanned PDF support.")
 
         self.assertEqual(result["status"], "answered")
@@ -64,21 +64,21 @@ class AgentChecks(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result["trace"][0]["transport"], "mcp_stdio")
 
     async def test_tool_budget_prevents_execution(self):
-        with patch("agent.call_model", return_value=tool_request()):
+        with patch("app.agent.call_model", return_value=tool_request()):
             result = await run_agent("Read a source.", max_tool_calls=0)
 
         self.assertEqual(result["reason"], "max_tool_calls")
         self.assertEqual(result["trace"], [])
 
     async def test_model_budget_preserves_completed_tool_result(self):
-        with patch("agent.call_model", return_value=tool_request()):
+        with patch("app.agent.call_model", return_value=tool_request()):
             result = await run_agent("Read a source.", max_model_calls=1)
 
         self.assertEqual(result["reason"], "max_model_calls")
         self.assertEqual(result["trace"][0]["result"]["source_id"], "doc_1")
 
     async def test_invalid_final_json_is_rejected(self):
-        with patch("agent.call_model", return_value={"content": "not JSON"}):
+        with patch("app.agent.call_model", return_value={"content": "not JSON"}):
             result = await run_agent("Produce a report.")
 
         self.assertEqual(result["status"], "invalid_report")

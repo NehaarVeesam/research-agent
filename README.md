@@ -1,153 +1,136 @@
-# Traceable Research Agent
+# Research Agent
 
-A Python research-agent project focused on inspectable tool execution, structured evidence, and auditable reports.
+A learning-focused research agent built with Python, Qwen, MCP, and LangGraph. It investigates a small fictional document collection and produces structured findings with source IDs, exact quotes, evidence gaps, and an execution trace.
 
-**Status:** early learning and implementation milestone. The current scripts use fictional local documents, a hosted Qwen endpoint, and a local MCP server over stdio. Semantic claim verification, persistent state, and benchmarking remain planned.
+**Current milestone:** both a manual Python-loop controller and a LangGraph workflow are implemented. External web research, semantic claim verification, and persistence are future work.
 
-## Project goal
-
-Build a bounded autonomous research agent that decomposes questions, discovers and invokes tools through MCP, preserves evidence provenance, identifies missing or conflicting evidence, and produces cited reports. Evaluate its quality and resource use against simpler retrieval and tool-calling baselines.
-
-The project grows incrementally: understand a concept, implement it, inspect its behavior, and extend the system.
-
-## Current implementation
-
-- MCP discovery of two tools: `search_sources` and `read_source`.
-- Translation of MCP tool definitions into Qwen's chat-completion tool format.
-- Explicit client-side tool allowlist and JSON-object argument checks; tool schema validation is handled by the server SDK.
-- A conversation loop that returns tool observations to the model.
-- Configurable model-call and tool-call limits.
-- In-memory tool traces, including the model-call number.
-- Pydantic schemas for findings, evidence references, and evidence gaps.
-- Checks that cited sources were successfully read and quoted passages occur in their text.
-- Explicit outcomes for answers, invalid reports, exhausted budgets, and some request/response failures.
-
-The sample task compares two **fictional** PDF-processing libraries. These documents are controlled inputs for learning and debugging; they are not real product research.
-
-## Execution flow
+## How it works
 
 ```text
-Question + tool definitions
-          |
-          v
-    Hosted Qwen model
-          |
-          +-- Tool requests --> MCP adapter --> MCP stdio server
-          |                                      |
-          |                         Append results to conversation
-          |                                      |
-          +<-------------------------------------+
-          |
-          +-- Final JSON --> Validate report structure
-                                 |
-                         Check sources and quotes
-                                 |
-                           Return result
+Question → Qwen → Tool requests → MCP server → Search/read documents
+              ↑                                      |
+              └──────── Tool observations ────────────┘
+              |
+              └── Final JSON → Schema + source/quote checks → Result
 ```
 
-The model proposes actions. Python validates and executes them, records observations, and enforces call limits. Tools currently execute sequentially.
-
-## Repository layout
-
-```text
-.
-├── agent.py                  # Model requests, MCP lifecycle, controller, trace, validation
-├── mcp_tools.py              # Discovery adapter, allowlist, invocation, result decoding
-├── mcp_server.py             # Exposes the search/read tools over stdio
-├── check_mcp.py              # Real MCP discovery and invocation smoke check
-├── check_validation.py       # Schema and source-reference validation exercises
-├── check_agent.py            # Real MCP loop with simulated model responses
-├── search.py                 # Fictional documents and local search/read functions
-├── schemas.py                # Pydantic report and evidence contracts
-├── requirements.txt          # Python dependencies
-├── .env.example              # Configuration template
-├── .gitignore
-├── README.md
-└── Project_02_Autonomous_Research_Agent_MCP_Blueprint.md
-```
+The model chooses actions. Application code enforces tool permissions and call limits. MCP provides tool discovery and invocation; LangGraph organizes state, nodes, and routing. The local stdio server starts automatically for each run, with no HTTP port required.
 
 ## Setup
 
-Use Python 3.11 or newer. From the project root:
+Use Python 3.11+ and run commands from the repository root:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
+```
+
+If you do not already have `.env`, create it from the template:
+
+```bash
 cp .env.example .env
 ```
 
-If `.env` already exists, edit it instead of copying over it.
-
-Configure your own endpoint and its exact served model identifier:
+Set your endpoint and exact served model identifier:
 
 ```dotenv
 QWEN_BASE_URL=http://localhost:8100/v1
-QWEN_MODEL=replace-with-the-served-model-id
+QWEN_MODEL=your-served-model-id
 QWEN_API_KEY=
 ```
 
-The endpoint must support OpenAI-compatible `POST /v1/chat/completions` requests, function tool definitions, assistant tool calls, and tool-result messages. A `/v1` base URL alone does not guarantee these capabilities.
+The endpoint must support OpenAI-compatible chat completions and function tool calling. A configured API key is sent as a bearer token. `.env` stays local and is ignored by Git. The local document tools need no model credentials.
 
-If configured, `QWEN_API_KEY` is sent as a bearer token. The local document server does not require model credentials.
+## Run either implementation
 
-Keep `.env` local. It is excluded by `.gitignore`; share `.env.example` as the configuration template.
+| Implementation | Command | Control flow |
+|---|---|---|
+| Python loop | `python -m app.agent` | Loop and conditions in `app/agent.py` |
+| LangGraph | `python -m app.workflow.runner` | Nodes and conditional edges in `app/workflow/` |
 
-## Run
+Both currently ask a fixed example question comparing fictional PDF libraries. Edit the question in the selected entry point's `__main__` block to change it.
 
-```bash
-python agent.py
+Python flow:
+
+```text
+Open MCP → Discover tools → Call Qwen → Execute requests → Repeat
+                                           └── Final answer → Validate → Return
 ```
 
-The application launches the local MCP server automatically and keeps its connection open for the run. No separate terminal or HTTP port is needed. Blocking model HTTP requests run in a worker thread so the event loop can service MCP communication; tool calls remain sequential.
+LangGraph flow:
 
-## Local checks
-
-```bash
-python check_validation.py
-python check_mcp.py
-python check_agent.py
+```text
+START → Model ── tools requested → Tools ── running → Model
+          |                         └── budget exhausted → END
+          ├── final answer → Validate → END
+          └── failed / model budget exhausted → END
 ```
 
-These checks do not call the model endpoint. `check_agent.py` substitutes deterministic model responses while exercising the real MCP subprocess, conversation history, report validation, and call limits. Currently, importing `agent.py` still requires the model configuration variables in `.env`.
+Defaults: six model calls, eight tool calls, and a 90-second timeout per model HTTP request. Tool calls execute sequentially. The model HTTP call runs in a worker thread so MCP communication can continue on the event loop. No overall time or monetary budget is enforced yet.
 
-The question is currently defined in the `__main__` block of `agent.py`. Edit that question to try another task over the same fictional collection.
+## Files and responsibilities
 
-The result is printed as JSON. An accepted report includes findings with source IDs and exact quotes, evidence gaps, validation check results, model/tool call counts, and a tool trace. Error and budget-exhaustion responses include the reason and accumulated trace.
-
-Defaults are six model calls and eight tool calls per run, with a 90-second timeout per HTTP request. These are not an overall wall-clock or monetary budget.
-
-## Understanding validation
-
-| Check | What it establishes |
+| File | Purpose |
 |---|---|
-| Pydantic schema | The JSON has the declared fields, types, and constraints |
-| Source reference | The cited source was successfully read during this run |
-| Exact quote | The quoted string occurs in the retrieved source text |
-| Claim support | Not implemented: whether the quote actually justifies the claim |
+| `app/agent.py` | Original Python controller; also supplies the Qwen HTTP function reused by the graph |
+| `app/search.py` | Three fictional documents and keyword search/read implementations |
+| `app/mcp_server.py` | Exposes those functions as MCP tools |
+| `app/mcp_tools.py` | Discovers allowed tools, converts definitions for Qwen, invokes tools, and decodes results |
+| `app/schemas.py` | Pydantic contracts for reports, findings, and evidence references |
+| `app/validation.py` | Checks that cited sources were read and quotes occur in their text |
+| `app/workflow/state.py` | Shared research data; messages/trace append, other fields replace |
+| `app/workflow/nodes.py` | Model, tool-execution, and report-validation nodes |
+| `app/workflow/routing.py` | Selects the next path from updated state |
+| `app/workflow/graph.py` | Registers nodes and edges, then compiles the workflow |
+| `app/workflow/runner.py` | Opens MCP, prepares initial state, runs the graph, and collects the result |
+| `checks/` | Local checks of components and complete execution paths |
+| `examples/` | Standalone LangGraph and Python-closure learning exercises |
 
-A genuine quote can still be attached to an unsupported claim. `status: answered` means the report passed the implemented checks; it does not establish factual correctness, research completeness, or semantic support. Reports explicitly mark claim support as `not_checked`.
+Use `python -m package.module` from the repository root. The `__init__.py` files identify Python packages. The graph runner currently imports model access from `app.agent`; importing it does not launch the original loop.
 
-## Current limitations
+## Checks
 
-- No external search, independent third-party MCP server integration, explicit planner, or persistent storage.
-- MCP result decoding currently expects JSON objects for this project's tools, not arbitrary multimodal results.
-- Connection-level failures can propagate as exceptions; comprehensive recovery and malformed-response handling remain future work.
-- Search uses simple keyword matching over three local documents and returns their full text as snippets.
-- Structured JSON is requested through prompting, then validated locally; invalid reports are not automatically repaired.
-- Exact quote matching is sensitive to whitespace and punctuation differences.
-- No semantic verification, source credibility scoring, or conflict-resolution mechanism.
-- No retry/recovery system, token/cost accounting, automated benchmark suite, or measured performance results.
-- The controller is a learning implementation, not a hardened production runtime.
+These commands use local data and simulated model responses, without contacting Qwen:
 
-## Roadmap
+```bash
+python -m checks.check_validation
+python -m checks.check_mcp
+python -m checks.check_agent
+python -m checks.check_model_node
+python -m checks.check_routing
+python -m checks.check_tool_node
+python -m checks.check_report_node
+python -m checks.check_graph_agent
+```
 
-1. Validate the basic tool loop and structured-report behavior.
-2. Extend the local MCP integration with external retrieval and an independently maintained server.
-3. Introduce explicit research tasks, evidence records, and adaptive planning.
-4. Assess claim support, missing evidence, and contradictions.
-5. Add persistence, checkpoints, bounded retries, and operational tracing.
-6. Compare against search-and-summarize and simpler tool-calling baselines.
-7. Deliver an API, interface, reproducible deployment, and measured case study.
+`check_agent` exercises the original controller; `check_graph_agent` exercises the complete graph. Both use real local MCP subprocesses. The other checks cover discovery, state updates, routing, and validation. Checks importing model access still require the configuration variables in `.env`.
 
-The [project blueprint](Project_02_Autonomous_Research_Agent_MCP_Blueprint.md) describes the broader proposed scope. Its architecture and roadmap should not be interpreted as completed capabilities.
+Learning examples:
+
+```bash
+python -m examples.check_graph
+python -m examples.python_closure
+```
+
+## Output and validation boundaries
+
+Results include a status and, where applicable, a report, validation errors, call counts, and tool trace. Reports contain `findings` with `claim`, `source_id`, and `quote` fields nested under evidence references, plus `evidence_gaps`.
+
+- **Schema validation:** checks JSON fields, types, and declared constraints.
+- **Evidence-reference validation:** checks that sources were read and quotes match exactly.
+- **Claim support:** remains `not_checked`; a real quote can still fail to justify a claim.
+
+`answered` means the implemented checks passed, not that research is complete or every claim is true. Budget exhaustion, invalid reports, and some request failures return explicit outcomes. Connection-level failures can still propagate as exceptions.
+
+## Next milestones
+
+1. Explicit research planning and coverage tracking.
+2. External search/retrieval and an independently maintained MCP server.
+3. Persistent source/evidence records, semantic claim verification, and conflict handling.
+4. Checkpoints, recovery, cancellation, and token/cost accounting.
+5. Reproducible baseline comparisons, then an API, interface, and deployment.
+
+The current implementation has no automatic report repair, durable checkpoints, formal benchmark results, or production reliability guarantees. Search is simple keyword matching and currently returns full document text as snippets. MCP decoding is scoped to this project's JSON-object tools.
+
+See the [project blueprint](Project_02_Autonomous_Research_Agent_MCP_Blueprint.md) for the proposed full scope.

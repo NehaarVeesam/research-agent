@@ -25,17 +25,21 @@ def call_model(messages: list[dict], tools: list[dict]) -> dict:
     if API_KEY:
         headers["Authorization"] = f"Bearer {API_KEY}"
 
+    payload = {
+        "model": MODEL,
+        "messages": messages,
+        "temperature": 0,
+    }
+
+    if tools:
+        payload["tools"] = tools
+        payload["tool_choice"] = "auto"
+
     response = requests.post(
         f"{BASE_URL}/chat/completions",
         headers=headers,
-        json = {
-            "model": MODEL,
-            "messages": messages,
-            "tools": tools,
-            "tool_choice": "auto",
-            "temperature": 0,
-        },
-        timeout = 90
+        json=payload,
+        timeout=600,
     )
 
     response.raise_for_status()

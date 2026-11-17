@@ -1,0 +1,922 @@
+{
+  "status": "answered",
+  "report": {
+    "findings": [
+      {
+        "claim": "PaperParse extracts embedded text from digital PDFs and extracts tables from digital PDFs, but scanned PDFs require the optional ScanBridge OCR integration.",
+        "evidence": [
+          {
+            "source_id": "doc_1",
+            "quote": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration."
+          },
+          {
+            "source_id": "doc_2",
+            "quote": "PaperParse extracts tables from digital PDFs."
+          }
+        ]
+      },
+      {
+        "claim": "For scanned PDFs with tables, PaperParse can process scanned tables with ScanBridge, but merged cells and low-quality scans may require manual correction.",
+        "evidence": [
+          {
+            "source_id": "doc_2",
+            "quote": "With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction."
+          }
+        ]
+      },
+      {
+        "claim": "VisionPages has built-in OCR for scanned PDFs and table extraction.",
+        "evidence": [
+          {
+            "source_id": "doc_3",
+            "quote": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages."
+          }
+        ]
+      },
+      {
+        "claim": "VisionPages' documented limitations for scanned content are difficulty with handwritten text and tables spanning pages.",
+        "evidence": [
+          {
+            "source_id": "doc_3",
+            "quote": "Its documentation reports difficulty with handwritten text and tables spanning pages."
+          }
+        ]
+      },
+      {
+        "claim": "The supplied local passages do not include quantitative accuracy results for either PaperParse or VisionPages on scanned PDFs with tables.",
+        "evidence": [
+          {
+            "source_id": "doc_1",
+            "quote": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration."
+          },
+          {
+            "source_id": "doc_2",
+            "quote": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction."
+          },
+          {
+            "source_id": "doc_3",
+            "quote": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages."
+          }
+        ]
+      },
+      {
+        "claim": "The supplied local passages describe PaperParse and VisionPages separately and do not directly compare them on the same scanned-table inputs.",
+        "evidence": [
+          {
+            "source_id": "doc_1",
+            "quote": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration."
+          },
+          {
+            "source_id": "doc_2",
+            "quote": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction."
+          },
+          {
+            "source_id": "doc_3",
+            "quote": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages."
+          }
+        ]
+      },
+      {
+        "claim": "The only accuracy-adjacent statements are qualitative weakness profiles: PaperParse may require manual correction for merged cells and low-quality scans, and VisionPages reports difficulty with handwritten text and tables spanning pages.",
+        "evidence": [
+          {
+            "source_id": "doc_2",
+            "quote": "merged cells and low-quality scans may require manual correction"
+          },
+          {
+            "source_id": "doc_3",
+            "quote": "difficulty with handwritten text and tables spanning pages"
+          }
+        ]
+      },
+      {
+        "claim": "The evidence is insufficient to establish which library is more accurate for scanned PDFs with tables.",
+        "evidence": [
+          {
+            "source_id": "doc_1",
+            "quote": "Scanned PDFs require the optional ScanBridge OCR integration."
+          },
+          {
+            "source_id": "doc_2",
+            "quote": "With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction."
+          },
+          {
+            "source_id": "doc_3",
+            "quote": "Its documentation reports difficulty with handwritten text and tables spanning pages."
+          }
+        ]
+      },
+      {
+        "claim": "PaperParse's scanned-PDF processing depends on the optional ScanBridge OCR integration, and the supplied passages do not document ScanBridge's own capabilities or accuracy.",
+        "evidence": [
+          {
+            "source_id": "doc_1",
+            "quote": "Scanned PDFs require the optional ScanBridge OCR integration."
+          }
+        ]
+      }
+    ],
+    "evidence_gaps": [
+      "No quantitative accuracy metrics, such as cell-level or table-level accuracy, precision, recall, F1, or error rates, are present in the inspected documents for PaperParse or VisionPages on scanned PDFs with tables.",
+      "No test conditions are documented in the inspected collection, including scan resolution or DPI, table complexity, document domain, language, or sample types.",
+      "No dataset, ground-truth basis, or head-to-head comparison of PaperParse and VisionPages on the same scanned-table inputs appears in the inspected documents.",
+      "No document in the inspected collection describes ScanBridge's capabilities, constraints, accuracy, bundling, or licensing, so PaperParse's scanned-PDF behavior depends on an undocumented component.",
+      "No format constraints, such as supported file types, page size, or DPI requirements, are stated for either library on scanned PDFs.",
+      "No information is provided on how frequently or severely PaperParse requires manual correction or VisionPages experiences difficulty, so the qualitative weakness profiles cannot be weighted against each other.",
+      "No VisionPages limitations regarding image quality, scan resolution, or merged cells are stated in the inspected documents; only handwritten text and tables spanning pages are mentioned.",
+      "No PaperParse limitations regarding tables spanning pages or handwritten text are stated in the inspected documents; only merged cells and low-quality scans are mentioned.",
+      "No information is provided on whether the two libraries' failure modes overlap or differ in impact for a given scanned-table workload."
+    ]
+  },
+  "checks": {
+    "schema": "passed",
+    "evidence_references": "passed",
+    "claim_support": "not_checked"
+  },
+  "plan": {
+    "objective": "Plan local-document research to compare PaperParse and VisionPages for scanned PDFs with tables, including their limitations and whether the available evidence establishes which library is more accurate.",
+    "tasks": [
+      {
+        "question": "What do the local documents state about the capabilities and limitations of PaperParse and VisionPages for scanned PDFs containing tables?",
+        "coverage_criteria": [
+          "Identify documented table-extraction or OCR behavior for each library on scanned PDFs.",
+          "Record explicitly stated limitations, such as table structure, image quality, or format constraints.",
+          "Note any missing or ambiguous statements about scanned PDFs with tables."
+        ]
+      },
+      {
+        "question": "What accuracy evidence do the local documents provide for PaperParse and VisionPages on scanned PDFs with tables?",
+        "coverage_criteria": [
+          "Locate quantitative or qualitative accuracy results for each library.",
+          "Identify the test conditions, sample types, and comparison basis used in the evidence.",
+          "Record conflicting results or absent accuracy evidence."
+        ]
+      },
+      {
+        "question": "Does the local evidence establish which library is more accurate for scanned PDFs with tables, and what limitations affect that conclusion?",
+        "coverage_criteria": [
+          "Determine whether the evidence directly compares the libraries under the same scanned-table conditions.",
+          "Assess whether the evidence is sufficient to support a definitive accuracy ranking.",
+          "Record gaps or constraints that prevent a conclusive accuracy determination."
+        ]
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "task_id": "task_001",
+      "question": "What do the local documents state about the capabilities and limitations of PaperParse and VisionPages for scanned PDFs containing tables?",
+      "coverage_criteria": [
+        "Identify documented table-extraction or OCR behavior for each library on scanned PDFs.",
+        "Record explicitly stated limitations, such as table structure, image quality, or format constraints.",
+        "Note any missing or ambiguous statements about scanned PDFs with tables."
+      ],
+      "status": "answered",
+      "evidence_ids": []
+    },
+    {
+      "task_id": "task_002",
+      "question": "What accuracy evidence do the local documents provide for PaperParse and VisionPages on scanned PDFs with tables?",
+      "coverage_criteria": [
+        "Locate quantitative or qualitative accuracy results for each library.",
+        "Identify the test conditions, sample types, and comparison basis used in the evidence.",
+        "Record conflicting results or absent accuracy evidence."
+      ],
+      "status": "answered",
+      "evidence_ids": []
+    },
+    {
+      "task_id": "task_003",
+      "question": "Does the local evidence establish which library is more accurate for scanned PDFs with tables, and what limitations affect that conclusion?",
+      "coverage_criteria": [
+        "Determine whether the evidence directly compares the libraries under the same scanned-table conditions.",
+        "Assess whether the evidence is sufficient to support a definitive accuracy ranking.",
+        "Record gaps or constraints that prevent a conclusive accuracy determination."
+      ],
+      "status": "answered",
+      "evidence_ids": []
+    }
+  ],
+  "task_results": {
+    "task_001": {
+      "task_id": "task_001",
+      "findings": [
+        {
+          "claim": "PaperParse natively extracts embedded text and tables from digital PDFs, but scanned PDFs require the optional ScanBridge OCR integration to be processed.",
+          "evidence": [
+            {
+              "source_id": "doc_1",
+              "quote": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration."
+            },
+            {
+              "source_id": "doc_2",
+              "quote": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction."
+            }
+          ]
+        },
+        {
+          "claim": "For scanned PDFs with tables, PaperParse (via ScanBridge) can process scanned tables, but its documented limitations are that merged cells and low-quality scans may require manual correction.",
+          "evidence": [
+            {
+              "source_id": "doc_2",
+              "quote": "With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction."
+            }
+          ]
+        },
+        {
+          "claim": "VisionPages has built-in OCR for scanned PDFs and table extraction, so it can handle scanned PDFs with tables without a separate OCR integration.",
+          "evidence": [
+            {
+              "source_id": "doc_3",
+              "quote": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction."
+            }
+          ]
+        },
+        {
+          "claim": "VisionPages' documented limitations for scanned content are difficulty with handwritten text and with tables spanning pages.",
+          "evidence": [
+            {
+              "source_id": "doc_3",
+              "quote": "Its documentation reports difficulty with handwritten text and tables spanning pages."
+            }
+          ]
+        }
+      ],
+      "evidence_gaps": [
+        "No document states VisionPages limitations regarding image quality, scan resolution, or merged cells; only handwritten text and multi-page tables are mentioned.",
+        "No document states PaperParse limitations regarding tables spanning pages or handwritten text; only merged cells and low-quality scans are mentioned.",
+        "No document describes ScanBridge's own capabilities, constraints, or whether it is bundled or separately licensed, so PaperParse's scanned-PDF behavior depends on an undocumented component.",
+        "No document specifies format constraints (e.g., supported file types, page size, DPI requirements) for either library on scanned PDFs.",
+        "No document directly compares PaperParse and VisionPages on the same scanned-table inputs, so relative capability cannot be established from these sources.",
+        "No quantitative or qualitative accuracy results for either library on scanned PDFs with tables appear in the local documents."
+      ]
+    },
+    "task_002": {
+      "task_id": "task_002",
+      "findings": [
+        {
+          "claim": "The local documents contain no quantitative accuracy results (no percentages, precision/recall/F1 scores, or benchmark figures) for either PaperParse or VisionPages on scanned PDFs with tables; the complete set of local documents consists of three short capability/limitation notes with no evaluation data.",
+          "evidence": [
+            {
+              "source_id": "doc_1",
+              "quote": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration."
+            },
+            {
+              "source_id": "doc_2",
+              "quote": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction."
+            },
+            {
+              "source_id": "doc_3",
+              "quote": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages."
+            }
+          ]
+        },
+        {
+          "claim": "The closest thing to accuracy evidence for PaperParse is a qualitative statement that, when processing scanned tables via ScanBridge, merged cells and low-quality scans may require manual correction, implying imperfect extraction on those cases; no test conditions, sample types, or measurement basis accompany this statement.",
+          "evidence": [
+            {
+              "source_id": "doc_2",
+              "quote": "With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction."
+            }
+          ]
+        },
+        {
+          "claim": "The closest thing to accuracy evidence for VisionPages is a qualitative statement that its documentation reports difficulty with handwritten text and tables spanning pages, implying reduced reliability on those cases; no test conditions, sample types, or measurement basis accompany this statement.",
+          "evidence": [
+            {
+              "source_id": "doc_3",
+              "quote": "Its documentation reports difficulty with handwritten text and tables spanning pages."
+            }
+          ]
+        },
+        {
+          "claim": "No test conditions, sample types, or comparison basis are documented for either library: none of the local sources describe an evaluation, dataset, scan quality level, table type, or head-to-head comparison on which any accuracy claim would rest.",
+          "evidence": [
+            {
+              "source_id": "doc_1",
+              "quote": "Scanned PDFs require the optional ScanBridge OCR integration."
+            },
+            {
+              "source_id": "doc_2",
+              "quote": "PaperParse extracts tables from digital PDFs."
+            },
+            {
+              "source_id": "doc_3",
+              "quote": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction."
+            }
+          ]
+        },
+        {
+          "claim": "There are no conflicting accuracy results in the local documents, because no accuracy results of any kind exist; the only potentially divergent signals are the different qualitative weakness profiles (PaperParse: merged cells and low-quality scans; VisionPages: handwritten text and multi-page tables), which are not measured or comparable.",
+          "evidence": [
+            {
+              "source_id": "doc_2",
+              "quote": "merged cells and low-quality scans may require manual correction"
+            },
+            {
+              "source_id": "doc_3",
+              "quote": "difficulty with handwritten text and tables spanning pages"
+            }
+          ]
+        }
+      ],
+      "evidence_gaps": [
+        "No quantitative accuracy metrics (e.g., cell-level or table-level accuracy, precision, recall, F1) exist for PaperParse on scanned PDFs with tables.",
+        "No quantitative accuracy metrics exist for VisionPages on scanned PDFs with tables.",
+        "No test conditions are documented for either library (scan resolution/DPI, table complexity, document domain, language).",
+        "No sample types or dataset descriptions are provided for any evaluation of either library.",
+        "No comparison basis exists: the libraries are never evaluated against each other or against a ground truth in the local documents.",
+        "No information on how 'manual correction' (PaperParse) or 'difficulty' (VisionPages) was measured or how frequently it occurs.",
+        "No accuracy evidence specific to tables on scanned PDFs for PaperParse beyond the general ScanBridge statement; no accuracy evidence for VisionPages beyond the general difficulty statement."
+      ]
+    },
+    "task_003": {
+      "task_id": "task_003",
+      "findings": [
+        {
+          "claim": "The local evidence does not directly compare PaperParse and VisionPages under the same scanned-table conditions; the three local documents describe each library separately, and no source evaluates both on the same scanned PDFs, tables, or test set.",
+          "evidence": [
+            {
+              "source_id": "doc_1",
+              "quote": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration."
+            },
+            {
+              "source_id": "doc_2",
+              "quote": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction."
+            },
+            {
+              "source_id": "doc_3",
+              "quote": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages."
+            }
+          ]
+        },
+        {
+          "claim": "The evidence is insufficient to support a definitive accuracy ranking: there are no quantitative accuracy metrics, no shared test conditions, and no head-to-head results for either library on scanned PDFs with tables, so no conclusion about which is more accurate can be drawn from the local documents.",
+          "evidence": [
+            {
+              "source_id": "doc_2",
+              "quote": "With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction."
+            },
+            {
+              "source_id": "doc_3",
+              "quote": "Its documentation reports difficulty with handwritten text and tables spanning pages."
+            }
+          ]
+        },
+        {
+          "claim": "The only accuracy-adjacent signals are non-comparable qualitative weakness profiles: PaperParse (via ScanBridge) may need manual correction for merged cells and low-quality scans, while VisionPages reports difficulty with handwritten text and tables spanning pages; these describe different failure modes, are unmeasured, and cannot be ranked against each other.",
+          "evidence": [
+            {
+              "source_id": "doc_2",
+              "quote": "merged cells and low-quality scans may require manual correction"
+            },
+            {
+              "source_id": "doc_3",
+              "quote": "difficulty with handwritten text and tables spanning pages"
+            }
+          ]
+        },
+        {
+          "claim": "A further constraint on any accuracy conclusion is that PaperParse's scanned-PDF capability depends on the optional ScanBridge OCR integration, whose own accuracy and constraints are undocumented, so even PaperParse's scanned-table performance is only indirectly characterized.",
+          "evidence": [
+            {
+              "source_id": "doc_1",
+              "quote": "Scanned PDFs require the optional ScanBridge OCR integration."
+            }
+          ]
+        }
+      ],
+      "evidence_gaps": [
+        "No direct comparison of PaperParse and VisionPages exists in the local documents; they are never tested on the same scanned-table inputs.",
+        "No quantitative accuracy data (percentages, precision/recall/F1, error rates) exists for either library on scanned PDFs with tables.",
+        "No shared test conditions, sample types, or ground-truth basis exist that would allow a like-for-like accuracy comparison.",
+        "The frequency or severity of the documented weaknesses (manual correction for PaperParse; difficulty for VisionPages) is unmeasured, so the weakness profiles cannot be weighted against each other.",
+        "ScanBridge's accuracy and limitations are undocumented, leaving PaperParse's scanned-PDF accuracy chain incomplete.",
+        "No information on whether the two libraries' failure modes (merged cells/low-quality scans vs. handwritten text/multi-page tables) overlap or differ in impact for a given scanned-table workload."
+      ]
+    }
+  },
+  "coverage_assessments": {
+    "task_001": {
+      "task_id": "task_001",
+      "criteria": [
+        {
+          "criterion_index": 0,
+          "verdict": "addressed",
+          "rationale": "The result documents scanned-PDF table/OCR behavior for both libraries: PaperParse requires the optional ScanBridge OCR integration and can process scanned tables through it, while VisionPages has built-in OCR and table extraction for scanned PDFs.",
+          "finding_indices": [
+            0,
+            1,
+            2
+          ],
+          "gap_indices": [
+            2
+          ]
+        },
+        {
+          "criterion_index": 1,
+          "verdict": "addressed",
+          "rationale": "It records explicitly stated limitations: PaperParse's scanned-table limitations include merged cells and low-quality scans, and VisionPages' limitations include handwritten text and tables spanning pages. The gaps note that some limitation categories, such as format constraints, are not stated in the documents.",
+          "finding_indices": [
+            1,
+            3
+          ],
+          "gap_indices": [
+            0,
+            1,
+            3
+          ]
+        },
+        {
+          "criterion_index": 2,
+          "verdict": "addressed",
+          "rationale": "The evidence gaps explicitly identify missing or ambiguous statements about scanned PDFs with tables, including undocumented ScanBridge details, absent format constraints, missing limitation categories, no direct comparison, and no accuracy results.",
+          "finding_indices": [],
+          "gap_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        }
+      ]
+    },
+    "task_002": {
+      "task_id": "task_002",
+      "criteria": [
+        {
+          "criterion_index": 0,
+          "verdict": "addressed",
+          "rationale": "The result locates the available accuracy-related evidence for each library: it states that no quantitative accuracy results exist for PaperParse or VisionPages, and it identifies the closest qualitative evidence for each, namely PaperParse's possible need for manual correction on merged cells and low-quality scans, and VisionPages' reported difficulty with handwritten text and tables spanning pages.",
+          "finding_indices": [
+            0,
+            1,
+            2
+          ],
+          "gap_indices": [
+            0,
+            1,
+            6
+          ]
+        },
+        {
+          "criterion_index": 1,
+          "verdict": "addressed",
+          "rationale": "The result identifies the test conditions, sample types, and comparison basis by explicitly recording that none are documented for either library. It notes that the qualitative statements are not accompanied by evaluation conditions, datasets, scan-quality levels, table types, or head-to-head comparison basis.",
+          "finding_indices": [
+            1,
+            2,
+            3
+          ],
+          "gap_indices": [
+            2,
+            3,
+            4
+          ]
+        },
+        {
+          "criterion_index": 2,
+          "verdict": "addressed",
+          "rationale": "The result records both the absence of accuracy evidence and the absence of conflicting results. It explains that no accuracy results of any kind exist in the local documents, and that the only divergent signals are unmeasured qualitative weakness profiles rather than conflicting accuracy findings.",
+          "finding_indices": [
+            0,
+            4
+          ],
+          "gap_indices": [
+            0,
+            1,
+            5,
+            6
+          ]
+        }
+      ]
+    },
+    "task_003": {
+      "task_id": "task_003",
+      "criteria": [
+        {
+          "criterion_index": 0,
+          "verdict": "addressed",
+          "rationale": "The result explicitly determines that the local evidence does not directly compare PaperParse and VisionPages under the same scanned-table conditions, noting that the documents describe each library separately and no source evaluates both on the same scanned PDFs, tables, or test set.",
+          "finding_indices": [
+            0
+          ],
+          "gap_indices": [
+            0
+          ]
+        },
+        {
+          "criterion_index": 1,
+          "verdict": "addressed",
+          "rationale": "The result assesses sufficiency and concludes that the evidence is insufficient to support a definitive accuracy ranking because there are no quantitative accuracy metrics, no shared test conditions, and no head-to-head results for scanned PDFs with tables.",
+          "finding_indices": [
+            1
+          ],
+          "gap_indices": [
+            1,
+            2
+          ]
+        },
+        {
+          "criterion_index": 2,
+          "verdict": "addressed",
+          "rationale": "The result records multiple gaps and constraints that prevent a conclusive accuracy determination, including the absence of direct comparison, quantitative data, shared conditions, measured weakness severity, and documentation of ScanBridge accuracy, as well as non-comparable qualitative failure modes.",
+          "finding_indices": [
+            2,
+            3
+          ],
+          "gap_indices": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        }
+      ]
+    }
+  },
+  "task_repair_attempts": {
+    "task_002": 1,
+    "task_003": 1
+  },
+  "model_calls": 18,
+  "tool_calls": 15,
+  "trace": [
+    {
+      "model_call": 2,
+      "step": 1,
+      "transport": "mcp_stdio",
+      "tool": "search_sources",
+      "arguments": "{\"query\": \"PaperParse scanned PDF tables OCR\"}",
+      "result": {
+        "results": [
+          {
+            "source_id": "doc_2",
+            "title": "PaperParse: tables and OCR limitations",
+            "snippet": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction.",
+            "score": 5
+          },
+          {
+            "source_id": "doc_1",
+            "title": "PaperParse: input support",
+            "snippet": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration.",
+            "score": 4
+          },
+          {
+            "source_id": "doc_3",
+            "title": "VisionPages: capabilities and limitations",
+            "snippet": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages.",
+            "score": 4
+          }
+        ]
+      }
+    },
+    {
+      "model_call": 2,
+      "step": 2,
+      "transport": "mcp_stdio",
+      "tool": "search_sources",
+      "arguments": "{\"query\": \"VisionPages scanned PDF tables OCR\"}",
+      "result": {
+        "results": [
+          {
+            "source_id": "doc_3",
+            "title": "VisionPages: capabilities and limitations",
+            "snippet": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages.",
+            "score": 5
+          },
+          {
+            "source_id": "doc_2",
+            "title": "PaperParse: tables and OCR limitations",
+            "snippet": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction.",
+            "score": 4
+          },
+          {
+            "source_id": "doc_1",
+            "title": "PaperParse: input support",
+            "snippet": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration.",
+            "score": 3
+          }
+        ]
+      }
+    },
+    {
+      "model_call": 3,
+      "step": 3,
+      "transport": "mcp_stdio",
+      "tool": "read_source",
+      "arguments": "{\"source_id\": \"doc_1\"}",
+      "result": {
+        "source_id": "doc_1",
+        "title": "PaperParse: input support",
+        "text": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration."
+      }
+    },
+    {
+      "model_call": 3,
+      "step": 4,
+      "transport": "mcp_stdio",
+      "tool": "read_source",
+      "arguments": "{\"source_id\": \"doc_2\"}",
+      "result": {
+        "source_id": "doc_2",
+        "title": "PaperParse: tables and OCR limitations",
+        "text": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction."
+      }
+    },
+    {
+      "model_call": 3,
+      "step": 5,
+      "transport": "mcp_stdio",
+      "tool": "read_source",
+      "arguments": "{\"source_id\": \"doc_3\"}",
+      "result": {
+        "source_id": "doc_3",
+        "title": "VisionPages: capabilities and limitations",
+        "text": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages."
+      }
+    },
+    {
+      "model_call": 4,
+      "step": 6,
+      "transport": "mcp_stdio",
+      "tool": "search_sources",
+      "arguments": "{\"query\": \"ScanBridge OCR integration scanned documents\"}",
+      "result": {
+        "results": [
+          {
+            "source_id": "doc_1",
+            "title": "PaperParse: input support",
+            "snippet": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration.",
+            "score": 4
+          },
+          {
+            "source_id": "doc_2",
+            "title": "PaperParse: tables and OCR limitations",
+            "snippet": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction.",
+            "score": 3
+          },
+          {
+            "source_id": "doc_3",
+            "title": "VisionPages: capabilities and limitations",
+            "snippet": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages.",
+            "score": 2
+          }
+        ]
+      }
+    },
+    {
+      "model_call": 4,
+      "step": 7,
+      "transport": "mcp_stdio",
+      "tool": "search_sources",
+      "arguments": "{\"query\": \"table extraction library limitations merged cells multi-page tables\"}",
+      "result": {
+        "results": [
+          {
+            "source_id": "doc_2",
+            "title": "PaperParse: tables and OCR limitations",
+            "snippet": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction.",
+            "score": 5
+          },
+          {
+            "source_id": "doc_3",
+            "title": "VisionPages: capabilities and limitations",
+            "snippet": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages.",
+            "score": 5
+          },
+          {
+            "source_id": "doc_1",
+            "title": "PaperParse: input support",
+            "snippet": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration.",
+            "score": 1
+          }
+        ]
+      }
+    },
+    {
+      "model_call": 5,
+      "step": 8,
+      "transport": "mcp_stdio",
+      "tool": "search_sources",
+      "arguments": "{\"query\": \"library comparison PDF OCR accuracy benchmark\"}",
+      "result": {
+        "results": [
+          {
+            "source_id": "doc_1",
+            "title": "PaperParse: input support",
+            "snippet": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration.",
+            "score": 3
+          },
+          {
+            "source_id": "doc_3",
+            "title": "VisionPages: capabilities and limitations",
+            "snippet": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages.",
+            "score": 3
+          },
+          {
+            "source_id": "doc_2",
+            "title": "PaperParse: tables and OCR limitations",
+            "snippet": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction.",
+            "score": 2
+          }
+        ]
+      }
+    },
+    {
+      "model_call": 6,
+      "step": 9,
+      "transport": "mcp_stdio",
+      "tool": "search_sources",
+      "arguments": "{\"query\": \"VisionPages table structure constraints image quality\"}",
+      "result": {
+        "results": [
+          {
+            "source_id": "doc_2",
+            "title": "PaperParse: tables and OCR limitations",
+            "snippet": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction.",
+            "score": 2
+          },
+          {
+            "source_id": "doc_3",
+            "title": "VisionPages: capabilities and limitations",
+            "snippet": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages.",
+            "score": 2
+          }
+        ]
+      }
+    },
+    {
+      "model_call": 9,
+      "step": 10,
+      "transport": "mcp_stdio",
+      "tool": "search_sources",
+      "arguments": "{\"query\": \"accuracy results benchmark test PaperParse VisionPages\"}",
+      "result": {
+        "results": [
+          {
+            "source_id": "doc_1",
+            "title": "PaperParse: input support",
+            "snippet": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration.",
+            "score": 1
+          },
+          {
+            "source_id": "doc_2",
+            "title": "PaperParse: tables and OCR limitations",
+            "snippet": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction.",
+            "score": 1
+          },
+          {
+            "source_id": "doc_3",
+            "title": "VisionPages: capabilities and limitations",
+            "snippet": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages.",
+            "score": 1
+          }
+        ]
+      }
+    },
+    {
+      "model_call": 9,
+      "step": 11,
+      "transport": "mcp_stdio",
+      "tool": "search_sources",
+      "arguments": "{\"query\": \"precision recall F1 table extraction evaluation\"}",
+      "result": {
+        "results": [
+          {
+            "source_id": "doc_3",
+            "title": "VisionPages: capabilities and limitations",
+            "snippet": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages.",
+            "score": 2
+          },
+          {
+            "source_id": "doc_2",
+            "title": "PaperParse: tables and OCR limitations",
+            "snippet": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction.",
+            "score": 1
+          }
+        ]
+      }
+    },
+    {
+      "model_call": 10,
+      "step": 12,
+      "transport": "mcp_stdio",
+      "tool": "search_sources",
+      "arguments": "{\"query\": \"test conditions sample scanned documents evaluation study\"}",
+      "result": {
+        "results": [
+          {
+            "source_id": "doc_1",
+            "title": "PaperParse: input support",
+            "snippet": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration.",
+            "score": 1
+          },
+          {
+            "source_id": "doc_2",
+            "title": "PaperParse: tables and OCR limitations",
+            "snippet": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction.",
+            "score": 1
+          },
+          {
+            "source_id": "doc_3",
+            "title": "VisionPages: capabilities and limitations",
+            "snippet": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages.",
+            "score": 1
+          }
+        ]
+      }
+    },
+    {
+      "model_call": 10,
+      "step": 13,
+      "transport": "mcp_stdio",
+      "tool": "search_sources",
+      "arguments": "{\"query\": \"comparison study OCR accuracy percentage correct extraction\"}",
+      "result": {
+        "results": [
+          {
+            "source_id": "doc_2",
+            "title": "PaperParse: tables and OCR limitations",
+            "snippet": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction.",
+            "score": 2
+          },
+          {
+            "source_id": "doc_3",
+            "title": "VisionPages: capabilities and limitations",
+            "snippet": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages.",
+            "score": 2
+          },
+          {
+            "source_id": "doc_1",
+            "title": "PaperParse: input support",
+            "snippet": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration.",
+            "score": 1
+          }
+        ]
+      }
+    },
+    {
+      "model_call": 14,
+      "step": 14,
+      "transport": "mcp_stdio",
+      "tool": "search_sources",
+      "arguments": "{\"query\": \"PaperParse VisionPages comparison head-to-head\"}",
+      "result": {
+        "results": [
+          {
+            "source_id": "doc_1",
+            "title": "PaperParse: input support",
+            "snippet": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration.",
+            "score": 1
+          },
+          {
+            "source_id": "doc_2",
+            "title": "PaperParse: tables and OCR limitations",
+            "snippet": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction.",
+            "score": 1
+          },
+          {
+            "source_id": "doc_3",
+            "title": "VisionPages: capabilities and limitations",
+            "snippet": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages.",
+            "score": 1
+          }
+        ]
+      }
+    },
+    {
+      "model_call": 14,
+      "step": 15,
+      "transport": "mcp_stdio",
+      "tool": "search_sources",
+      "arguments": "{\"query\": \"more accurate better library scanned tables\"}",
+      "result": {
+        "results": [
+          {
+            "source_id": "doc_3",
+            "title": "VisionPages: capabilities and limitations",
+            "snippet": "VisionPages is a fictional library with built-in OCR for scanned PDFs and table extraction. Its documentation reports difficulty with handwritten text and tables spanning pages.",
+            "score": 3
+          },
+          {
+            "source_id": "doc_1",
+            "title": "PaperParse: input support",
+            "snippet": "PaperParse is a fictional library. It extracts embedded text from digital PDFs. Scanned PDFs require the optional ScanBridge OCR integration.",
+            "score": 2
+          },
+          {
+            "source_id": "doc_2",
+            "title": "PaperParse: tables and OCR limitations",
+            "snippet": "PaperParse extracts tables from digital PDFs. With ScanBridge, it can process scanned tables, but merged cells and low-quality scans may require manual correction.",
+            "score": 2
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,8 +1,7 @@
 from pydantic import ValidationError
-from app.agent import validate_evidence_references
 from app.schemas import ResearchReport
 from app.search import read_source
-
+from app.validation import validate_evidence_references
 # Simulate a trace in which the agent successfully read doc_1
 trace = [
     {

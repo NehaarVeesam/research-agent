@@ -2,7 +2,7 @@
 
 A learning-focused research agent built with Python, Qwen, MCP, and LangGraph. It investigates a small fictional document collection and produces structured findings with source IDs, exact quotes, evidence gaps, and an execution trace.
 
-**Current milestone:** both a manual Python-loop controller and a LangGraph workflow are implemented. External web research, semantic claim verification, and persistence are future work.
+**Current milestone:** the LangGraph workflow plans research, investigates tasks sequentially, assesses coverage, and synthesizes a report. The original Python-loop controller remains available as a simpler implementation. External web research, semantic claim verification, and persistence are future work.
 
 ## How it works
 
@@ -61,13 +61,15 @@ Open MCP → Discover tools → Call Qwen → Execute requests → Repeat
 LangGraph flow:
 
 ```text
-START → Model ── tools requested → Tools ── running → Model
-          |                         └── budget exhausted → END
-          ├── final answer → Validate → END
-          └── failed / model budget exhausted → END
+START → Planner → Select task → Model ⇄ Tools
+                     ↑            |
+                     └── Assess ← Collect task result
+
+No pending tasks → Synthesize → Validate final report → END
+Handled failures or budget exhaustion → END with collected records
 ```
 
-Defaults: six model calls, eight tool calls, and a 90-second timeout per model HTTP request. Tool calls execute sequentially. The model HTTP call runs in a worker thread so MCP communication can continue on the event loop. No overall time or monetary budget is enforced yet.
+Default model-call limits are six for the original controller and twenty for LangGraph; both allow eight tool calls and use a 90-second timeout per model HTTP request. Planning, research, JSON repair, coverage assessment, and synthesis all consume the graph's model budget. Tool calls execute sequentially. Blocking model HTTP requests run in a worker thread. No overall time or monetary budget is enforced yet, and synthesis capacity is not reserved: budget exhaustion can return task records without a final report.
 
 ## Files and responsibilities
 
@@ -79,8 +81,9 @@ Defaults: six model calls, eight tool calls, and a 90-second timeout per model H
 | `app/mcp_tools.py` | Discovers allowed tools, converts definitions for Qwen, invokes tools, and decodes results |
 | `app/schemas.py` | Pydantic contracts for reports, findings, and evidence references |
 | `app/validation.py` | Checks that cited sources were read and quotes occur in their text |
+| `app/planning/` | Plan generation, tracked tasks, task-result validation, and criterion-level coverage assessment |
 | `app/workflow/state.py` | Shared research data; messages/trace append, other fields replace |
-| `app/workflow/nodes.py` | Model, tool-execution, and report-validation nodes |
+| `app/workflow/nodes.py` | Planning, task selection, research, tools, result collection, coverage, synthesis, and report validation |
 | `app/workflow/routing.py` | Selects the next path from updated state |
 | `app/workflow/graph.py` | Registers nodes and edges, then compiles the workflow |
 | `app/workflow/runner.py` | Opens MCP, prepares initial state, runs the graph, and collects the result |
@@ -104,7 +107,7 @@ python -m checks.check_report_node
 python -m checks.check_graph_agent
 ```
 
-`check_agent` exercises the original controller; `check_graph_agent` exercises the complete graph. Both use real local MCP subprocesses. The other checks cover discovery, state updates, routing, and validation. Checks importing model access still require the configuration variables in `.env`.
+`check_agent` exercises the original controller. `check_graph_agent` checks the complete task graph, multiple tasks, unresolved gaps, invalid results, bounded JSON repair, and budget stops. Both use real local MCP subprocesses and simulated model responses. Additional `checks/check_*.py` modules exercise planning, task selection/results, coverage, synthesis, and validation independently. Checks importing model access still require the configuration variables in `.env`.
 
 Learning examples:
 
@@ -123,14 +126,16 @@ Results include a status and, where applicable, a report, validation errors, cal
 
 `answered` means the implemented checks passed, not that research is complete or every claim is true. Budget exhaustion, invalid reports, and some request failures return explicit outcomes. Connection-level failures can still propagate as exceptions.
 
+Graph output also includes the plan, task statuses, task results, and coverage assessments. Tasks become `answered` or `unresolved` according to a fallible model assessment; there is no task retry loop yet. A final report may pass validation while containing unresolved tasks. Evidence-ID lists remain empty until persistent evidence records are implemented.
+
 ## Next milestones
 
-1. Explicit research planning and coverage tracking.
+1. Evidence-driven follow-up research, bounded task retries, and synthesis-budget reservation.
 2. External search/retrieval and an independently maintained MCP server.
 3. Persistent source/evidence records, semantic claim verification, and conflict handling.
 4. Checkpoints, recovery, cancellation, and token/cost accounting.
 5. Reproducible baseline comparisons, then an API, interface, and deployment.
 
-The current implementation has no automatic report repair, durable checkpoints, formal benchmark results, or production reliability guarantees. Search is simple keyword matching and currently returns full document text as snippets. MCP decoding is scoped to this project's JSON-object tools.
+Malformed task-result JSON gets at most one model-based formatting repair per task, followed by the full task-ID, schema, source-read, and quote checks again. Repair attempts are counted and returned in `task_repair_attempts`. A repair prompt asks the model to preserve content, but semantic equivalence is not independently verified. Schema errors in valid JSON, wrong task IDs, and unsupported source/quote references are not repaired automatically. Planning, coverage, and final-report responses are outside this repair policy. There are no durable checkpoints, formal benchmark results, or production reliability guarantees yet. Search is simple keyword matching and currently returns full document text as snippets. MCP decoding is scoped to this project's JSON-object tools.
 
 See the [project blueprint](Project_02_Autonomous_Research_Agent_MCP_Blueprint.md) for the proposed full scope.

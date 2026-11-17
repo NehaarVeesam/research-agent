@@ -49,7 +49,7 @@ if __name__ == "__main__":
         "content": '{"findings": [], "evidence_gaps": []}',
     }
 
-    assert route_after_model(state) == "validate"
-    print("Answer returned → validate")
+    assert route_after_model(state) == "collect"
+    print("Answer returned → collect")
 
     print("\nRouting checks passed.")

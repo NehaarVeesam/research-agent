@@ -2,6 +2,8 @@
 
 [Module index](README.md)
 
+This note follows the learning sequence. See the [project README](../../README.md) for the complete current workflow; named live runs below are historical observations.
+
 ## Purpose
 
 Express the controller as shared state, execution nodes, and explicit transitions instead of one growing Python loop. LangGraph orchestrates execution; it does not decide evidence quality for us.

@@ -1,38 +1,39 @@
-# Research Agent
+# Autonomous Research Agent
 
-A learning-focused research agent built with Python, Qwen, MCP, and LangGraph. It investigates a small fictional document collection and produces structured findings with source IDs, exact quotes, evidence gaps, and an execution trace.
+An evidence-grounded research agent built with **Python, LangGraph, MCP, Qwen, Pydantic and SQLite**. It plans investigations, retrieves documents, produces cited findings, checks claim support, and can perform one targeted follow-up within execution limits.
 
-**Current milestone:** the LangGraph workflow plans research, investigates tasks sequentially, assesses coverage, and synthesizes a report. The original Python-loop controller remains available as a simpler implementation. External web research, semantic claim verification, and persistence are future work.
+The agreed learning and portfolio scope is implemented. All 25 deterministic check modules passed, and the initial 45-trial frozen-document evaluation is complete. This is a CLI project; an API, UI and hosted deployment are optional extensions.
 
-## How it works
+## Architecture
 
 ```text
-Question → Qwen → Tool requests → MCP server → Search/read documents
-              ↑                                      |
-              └──────── Tool observations ────────────┘
-              |
-              └── Final JSON → Schema + source/quote checks → Result
+Question → Plan → Select task → Research model ⇄ MCP search/read
+                     ↑                |
+                     └── Assess coverage ← Collect/validate task result
+
+No pending tasks → Synthesize → Validate citations → Verify claim support
+                                                       |
+                         Select follow-up ← Decision → Finish
+                         (at most one cycle)
 ```
 
-The model chooses actions. Application code enforces tool permissions and call limits. MCP provides tool discovery and invocation; LangGraph organizes state, nodes, and routing. The local stdio server starts automatically for each run, with no HTTP port required.
+Qwen proposes actions and assesses evidence. Python enforces permitted tools, validation and budgets. MCP discovers and invokes search/read tools across a process boundary. LangGraph manages state and routing; SQLite checkpoints let the normal graph CLI resume pending work after interruption.
+
+The original Python-loop implementation remains available for learning. It has no planning, coverage, semantic verification or follow-up stages.
 
 ## Setup
 
-Use Python 3.11+ and run commands from the repository root:
+Use Python 3.11+ on Linux/macOS and run commands from the repository root. The persistence implementation uses Unix file locking; on Windows, use WSL.
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
-```
-
-If you do not already have `.env`, create it from the template:
-
-```bash
+# Only if you do not already have .env:
 cp .env.example .env
 ```
 
-Set your endpoint and exact served model identifier:
+Configure your hosted Qwen endpoint and its exact served model identifier:
 
 ```dotenv
 QWEN_BASE_URL=http://localhost:8100/v1
@@ -40,102 +41,113 @@ QWEN_MODEL=your-served-model-id
 QWEN_API_KEY=
 ```
 
-The endpoint must support OpenAI-compatible chat completions and function tool calling. A configured API key is sent as a bearer token. `.env` stays local and is ignored by Git. The local document tools need no model credentials.
+The endpoint must support OpenAI-compatible chat completions, function tool calling and JSON output. The benchmark used `Qwen/Qwen3.8-27B`. The repository does not host the model. `.env` is ignored by Git; `.env.example` contains configuration names and defaults.
 
-## Run either implementation
-
-| Implementation | Command | Control flow |
-|---|---|---|
-| Python loop | `python -m app.agent` | Loop and conditions in `app/agent.py` |
-| LangGraph | `python -m app.workflow.runner` | Nodes and conditional edges in `app/workflow/` |
-
-Both currently ask a fixed example question comparing fictional PDF libraries. Edit the question in the selected entry point's `__main__` block to change it.
-
-Python flow:
-
-```text
-Open MCP → Discover tools → Call Qwen → Execute requests → Repeat
-                                           └── Final answer → Validate → Return
-```
-
-LangGraph flow:
-
-```text
-START → Planner → Select task → Model ⇄ Tools
-                     ↑            |
-                     └── Assess ← Collect task result
-
-No pending tasks → Synthesize → Validate final report → END
-Handled failures or budget exhaustion → END with collected records
-```
-
-Default model-call limits are six for the original controller and twenty for LangGraph; both allow eight tool calls and use a 90-second timeout per model HTTP request. Planning, research, JSON repair, coverage assessment, and synthesis all consume the graph's model budget. Tool calls execute sequentially. Blocking model HTTP requests run in a worker thread. No overall time or monetary budget is enforced yet, and synthesis capacity is not reserved: budget exhaustion can return task records without a final report.
-
-## Files and responsibilities
-
-| File | Purpose |
-|---|---|
-| `app/agent.py` | Original Python controller; also supplies the Qwen HTTP function reused by the graph |
-| `app/search.py` | Three fictional documents and keyword search/read implementations |
-| `app/mcp_server.py` | Exposes those functions as MCP tools |
-| `app/mcp_tools.py` | Discovers allowed tools, converts definitions for Qwen, invokes tools, and decodes results |
-| `app/schemas.py` | Pydantic contracts for reports, findings, and evidence references |
-| `app/validation.py` | Checks that cited sources were read and quotes occur in their text |
-| `app/planning/` | Plan generation, tracked tasks, task-result validation, and criterion-level coverage assessment |
-| `app/workflow/state.py` | Shared research data; messages/trace append, other fields replace |
-| `app/workflow/nodes.py` | Planning, task selection, research, tools, result collection, coverage, synthesis, and report validation |
-| `app/workflow/routing.py` | Selects the next path from updated state |
-| `app/workflow/graph.py` | Registers nodes and edges, then compiles the workflow |
-| `app/workflow/runner.py` | Opens MCP, prepares initial state, runs the graph, and collects the result |
-| `checks/` | Local checks of components and complete execution paths |
-| `examples/` | Standalone LangGraph and Python-closure learning exercises |
-
-Use `python -m package.module` from the repository root. The `__init__.py` files identify Python packages. The graph runner currently imports model access from `app.agent`; importing it does not launch the original loop.
-
-## Checks
-
-These commands use local data and simulated model responses, without contacting Qwen:
+## Run
 
 ```bash
-python -m checks.check_validation
-python -m checks.check_mcp
-python -m checks.check_agent
-python -m checks.check_model_node
-python -m checks.check_routing
-python -m checks.check_tool_node
-python -m checks.check_report_node
+# Complete graph, default fictional PDF-library question:
+python -m app.workflow.runner
+
+# Original Python tool loop:
+python -m app.agent
+
+# Web research, using the configured provider:
+python -m app.workflow.runner --backend web --question "What are Python generators?"
+
+# Inspect or resume a graph CLI run:
+python -m app.workflow.runner --inspect runs/<run-id>
+python -m app.workflow.runner --resume runs/<run-id>
+```
+
+Local mode searches three fictional documents. Web mode defaults to Wikipedia; optional Tavily needs its own key and approved domains. Retrieval applies domain/network checks, bounded downloads and text extraction, caching, stable source IDs and content hashes. See [retrieval configuration](docs/modules/11_external_retrieval.md).
+
+Graph defaults are 60 model calls and 60 tool requests per run; the original loop defaults to six and eight. Planning, coverage, repair, synthesis and verification consume model budget. Web and benchmark research also have per-task allowances. Requests have a 600-second HTTP timeout; no overall wall-time or monetary cap is enforced. Tools execute sequentially, and blocking model calls run in a worker thread.
+
+Use `--max-model-calls`, `--max-tool-calls` and `--max-followup-cycles 0` to control a new graph run. Resume preserves the saved configuration and budgets; it does not grant more calls. Code/model changes invalidate resume compatibility. See [checkpoint behavior and limits](docs/modules/14_checkpoint_persistence.md).
+
+## Evidence and failure handling
+
+Reports contain `findings`, each with a claim and evidence references (`source_id`, exact `quote`), plus `evidence_gaps`.
+
+- **Structure:** Pydantic checks fields, types and constraints.
+- **Citation validity:** Python checks that a source was successfully read and the quotation occurs in its text.
+- **Claim support:** Qwen assesses whether the cited evidence supports every material part of a finding. Partial or unsupported findings retain the report with `invalid_report` for review.
+- **Coverage:** Qwen assesses task criteria. Unresolved tasks and evidence gaps can remain in an accepted report.
+- **Recovery:** one bounded task-JSON repair; local durable checkpoints, restored source snapshots and attempt-bounded request replay for pending work.
+
+`answered` means the configured checks passed, not that every task was resolved or every statement is true. The original Python loop does not assess semantic support. Exact quotes do not prove entailment or source credibility; Qwen judgments are fallible. The semantic gate assesses findings, not every free-text gap. Source IDs and quotes are tracked, but a dedicated evidence database and systematic conflict detection are not implemented.
+
+## Saved records
+
+Graph CLI runs save configuration, timestamped logs, model request/response/error journals, results, tool traces, follow-up history, verification assessments, SQLite checkpoints and supporting recovery records under `runs/<id>/`. Progress goes to stderr; the final result is JSON on stdout. Importing the runner does not start a run.
+
+Configured API key values are redacted. Run records can contain questions and retrieved text; they remain local and are ignored by Git. Unexpected failures may leave only incremental records, and completed terminal failures are not automatically retried. See [saved artifacts](docs/modules/11_external_retrieval.md#saved-qwen-runs).
+
+## Evaluation results
+
+On 2026-11-17, Qwen completed **15 questions × three variants = 45 trials**, one repeat each, against frozen fictional documents. Both agent variants had 60-model/60-tool ceilings. The retrieval baseline searches once, reads up to three sources and makes one synthesis call.
+
+| Variant | Offline rubric successes | Workflow accepted | Validated offline grades | Mean research time | Mean model / tool requests |
+|---|---:|---:|---:|---:|---:|
+| Retrieval only | 12/15 | 15/15 | 15/15 | 9.0 s | 1.0 / 3.7 |
+| Agent without follow-up | 13/15 | 12/15 | 14/15 | 95.0 s | 14.7 / 9.6 |
+| Agent with follow-up | 15/15 | 13/15 | 15/15 | 133.9 s | 20.9 / 12.8 |
+
+All **155 emitted references** passed source-read/exact-quote checks. Each trial used one additional offline grading call, excluded from research time and model counts above. Tool counts include cached and policy-rejected requests. Input/output token usage is saved; dollar cost is unknown because no endpoint prices were supplied.
+
+Follow-up received higher offline scores with substantially greater execution usage. **15/15 offline successes is not 100% end-to-end reliability:** two follow-up reports were rejected internally for claims broader than their citations. One no-follow-up grade failed evidence-index validation and remains unscored, with the trial retained in the success-rate denominator. Baseline workflow acceptance has no semantic gate.
+
+These are authored seed rubrics and same-model judgments. The grader is blind to variant names and internal verdicts, but has full reference documents. Focused assistant review found it overlooking scope qualifiers. Independent human review, repeated trials and open-web generalization remain unestablished. Read the [results and case review](docs/evaluation/research_v1_results.md), [45-trial measurements](docs/evaluation/research_v1_trials.csv), and [provenance](docs/evaluation/research_v1_provenance.json).
+
+```bash
+# One-question smoke comparison:
+python -m app.evaluation.runner --cases scanbridge --max-model-calls 24 --max-tool-calls 16
+
+# Full matrix; can require hundreds of Qwen calls:
+python -m app.evaluation.runner --max-model-calls 60 --max-tool-calls 60
+
+# Continue an interrupted benchmark using the original code/model configuration:
+python -m app.evaluation.runner --resume runs/evaluations/<benchmark-id>
+```
+
+Benchmark resume skips completed cells and restarts an interrupted cell; it does not resume that trial's graph checkpoint. Completed failures remain recorded. Offline grades never feed back into the trial. Details and optional token-price arguments are in [module 15](docs/modules/15_evaluation_and_baselines.md). Original benchmark records remain under `runs/evaluations/20261117T123834_829810Z_e1629ab5/`; the public exports preserve their measurements without raw prompts or endpoint details.
+
+## Checks and learning
+
+Representative checks use simulated models and local/mocked sources, without hosted Qwen calls:
+
+```bash
 python -m checks.check_graph_agent
+python -m checks.check_claim_verification
+python -m checks.check_followup
+python -m checks.check_persistence
+python -m checks.check_evaluation
 ```
 
-`check_agent` exercises the original controller. `check_graph_agent` checks the complete task graph, multiple tasks, unresolved gaps, invalid results, bounded JSON repair, and budget stops. Both use real local MCP subprocesses and simulated model responses. Additional `checks/check_*.py` modules exercise planning, task selection/results, coverage, synthesis, and validation independently. Checks importing model access still require the configuration variables in `.env`.
+The latest full regression run passed all **25 deterministic check modules**. A separate `python -m checks.check_web_live` performs real Wikipedia retrieval through MCP without Qwen. Tavily has mocked-test coverage only. Checks importing model access require the configuration names in `.env`. Test success covers the exercised scenarios, not general production reliability.
 
-Learning examples:
+Use `python -m package.module` from the repository root so sibling packages resolve correctly. [Module notes 01–15](docs/modules/README.md) explain the code, Python closures/async, state, routing, validation, checks and interview concepts. Earlier notes identify learning milestones; the root README describes the current implementation.
 
-```bash
-python -m examples.check_graph
-python -m examples.python_closure
-```
+## Repository map
 
-## Output and validation boundaries
+| Location | Responsibility |
+|---|---|
+| `app/agent.py` | Original controller and shared Qwen HTTP function |
+| `app/search.py`, `app/mcp_server.py`, `app/mcp_tools.py` | Local fixtures, MCP server selection, discovery, schema conversion and invocation |
+| `app/retrieval/` | Web providers, bounded page reads, source metadata and access checks |
+| `app/schemas.py`, `app/validation.py` | Report contracts and source/quote validation |
+| `app/planning/` | Plans, tasks, coverage, task results and follow-up selection |
+| `app/workflow/` | State, nodes, routing, graph, CLI, research limits, artifacts and persistence |
+| `app/verification/` | Semantic claim checks and saved-report verification |
+| `app/evaluation/`, `benchmarks/` | Frozen fixtures, variants, grading and accounting |
+| `checks/`, `examples/` | Controlled checks and learning exercises |
+| `docs/modules/`, `docs/evaluation/` | Learning notes, measured results and focused failure review |
 
-Results include a status and, where applicable, a report, validation errors, call counts, and tool trace. Reports contain `findings` with `claim`, `source_id`, and `quote` fields nested under evidence references, plus `evidence_gaps`.
+`examples/result1.json` is a historical local-data output, not the current benchmark or a schema guarantee. To verify a saved report with Qwen without repeating research, use `python -m app.verification.runner --input-run runs/<run-id>`.
 
-- **Schema validation:** checks JSON fields, types, and declared constraints.
-- **Evidence-reference validation:** checks that sources were read and quotes match exactly.
-- **Claim support:** remains `not_checked`; a real quote can still fail to justify a claim.
+## Scope and extensions
 
-`answered` means the implemented checks passed, not that research is complete or every claim is true. Budget exhaustion, invalid reports, and some request failures return explicit outcomes. Connection-level failures can still propagate as exceptions.
+The CLI research workflow, evidence checks, one follow-up cycle, local checkpoint recovery, evaluation framework and initial results are complete for this portfolio scope. Optional extensions include independent judge calibration, repeated/broader benchmarks, richer evidence records, systematic conflicts, third-party MCP servers, and an API/UI/deployment. FastAPI, PostgreSQL, Langfuse and Docker are not part of this implementation.
 
-Graph output also includes the plan, task statuses, task results, and coverage assessments. Tasks become `answered` or `unresolved` according to a fallible model assessment; there is no task retry loop yet. A final report may pass validation while containing unresolved tasks. Evidence-ID lists remain empty until persistent evidence records are implemented.
-
-## Next milestones
-
-1. Evidence-driven follow-up research, bounded task retries, and synthesis-budget reservation.
-2. External search/retrieval and an independently maintained MCP server.
-3. Persistent source/evidence records, semantic claim verification, and conflict handling.
-4. Checkpoints, recovery, cancellation, and token/cost accounting.
-5. Reproducible baseline comparisons, then an API, interface, and deployment.
-
-Malformed task-result JSON gets at most one model-based formatting repair per task, followed by the full task-ID, schema, source-read, and quote checks again. Repair attempts are counted and returned in `task_repair_attempts`. A repair prompt asks the model to preserve content, but semantic equivalence is not independently verified. Schema errors in valid JSON, wrong task IDs, and unsupported source/quote references are not repaired automatically. Planning, coverage, and final-report responses are outside this repair policy. There are no durable checkpoints, formal benchmark results, or production reliability guarantees yet. Search is simple keyword matching and currently returns full document text as snippets. MCP decoding is scoped to this project's JSON-object tools.
-
-See the [project blueprint](Project_02_Autonomous_Research_Agent_MCP_Blueprint.md) for the proposed full scope.
+The [original blueprint](Project_02_Autonomous_Research_Agent_MCP_Blueprint.md) is a broader design reference, not a claim that every proposed feature shipped.

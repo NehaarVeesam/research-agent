@@ -2,6 +2,8 @@
 
 [Module index](README.md)
 
+This note follows the learning sequence. See the [project README](../../README.md) for the complete current workflow; named live runs below are historical observations.
+
 ## Purpose
 
 Combine independently collected task results into one coherent response to the original question, preserving missing evidence and unresolved coverage.
@@ -22,7 +24,7 @@ Combine independently collected task results into one coherent response to the o
 5. The model is asked for `ResearchReport` JSON without tools, external facts, or changed quotes.
 6. Its response becomes `latest_reply` and is passed to final validation.
 7. Final validation applies report schema and source/quote checks against the run trace.
-8. The runner closes MCP and returns the result with records, counts, and trace.
+8. The current graph then verifies claim support and may schedule one follow-up (modules 12–13) before the runner closes MCP and returns the records.
 
 The separate synthesis context avoids simply replaying the entire research conversation. Prompt instructions ask the model to retain gaps; there is no independent validator guaranteeing that every gap survives synthesis.
 
@@ -41,13 +43,13 @@ model_calls
 trace[]
 ```
 
-A report contains findings and evidence gaps. Schema and evidence-reference checks are reported separately from `claim_support`, which remains `not_checked`.
+A report contains findings and evidence gaps. Schema and evidence-reference checks are separate from `claim_support`. The original controller leaves semantic support `not_checked`; the current graph assesses it with Qwen after synthesis (module 12).
 
 `status="answered"` means the final report passed implemented checks. It does not mean every task is answered or every statement is true. Inspect task statuses and assessments separately.
 
 ## Budgets and failures
 
-Planning, research, repair, assessment, and synthesis share one model-call budget. There is no synthesis reservation. Reaching the budget before synthesis returns an explicit budget outcome with available task records instead of fabricating a report.
+Planning, research, repair, assessment, synthesis and verification share one model-call budget. Bounded web/benchmark research estimates a completion reserve, but this cannot guarantee enough capacity for arbitrary output. Reaching the budget before synthesis returns an explicit budget outcome with available task records instead of fabricating a report.
 
 A live synthesis request previously timed out after the then-configured read timeout. That was a transport failure, not invalid JSON. Raising a timeout is not retry/recovery or checkpointing. The current timeout is documented in the monitoring module.
 

@@ -1,6 +1,6 @@
 # Completed module notes
 
-These are implementation and learning notes for the modules completed so far. They describe the repository's current behavior, not a verbatim transcript or a claim that the entire blueprint is finished.
+These notes explain the 15 completed modules in learning order. The agreed CLI portfolio scope and initial evaluation are complete. Earlier live runs and check counts document milestones; use the [project README](../../README.md) for the current implementation snapshot. The broader blueprint includes optional work that has not shipped.
 
 ## Reading order
 
@@ -32,7 +32,10 @@ START → Planner → Select task → Model ⇄ MCP tools
                      └── Assess ← Collect task result
                                     └── Malformed JSON → Repair once → Collect
 
-No pending tasks → Synthesize → Validate report → Verify claim support → END
+No pending tasks → Synthesize → Validate report → Verify claim support
+                                                       |
+                         Select follow-up ← Decision → END
+                         (at most one cycle)
 Handled failures or exhausted budgets → END with available records
 ```
 
@@ -58,15 +61,15 @@ After module 11, all 17 existing check modules passed again. Thirteen retrieval 
 
 Local mode uses three fictional documents; web mode supports Wikipedia or Tavily search and bounded HTML/plain-text retrieval. The graph now assesses claim support with Qwen after deterministic validation; the original loop remains `not_checked`. Coverage is a fallible model assessment; source and quote checks do not establish truth. Normal graph CLI runs now use SQLite checkpoints and a persisted MCP source store; evidence-ID lists remain placeholders.
 
-## Still pending
+## Optional extensions and known limits
 
 - Integration with an independently maintained MCP server (our own server now supports external retrieval).
 - Persistent source/evidence records, deduplication, and claim/task links.
 - Systematic conflicts, verifier calibration and uncertainty evaluation.
 - More sophisticated follow-up selection and information-gain stopping (one bounded feedback cycle is implemented).
 - Broader transport recovery, checkpoint migrations and dynamic budget allocation (local checkpoint/resume is implemented).
-- Full reviewed benchmark campaign, verifier calibration, broader time/token/cost enforcement and security hardening (evaluation accounting and baseline runners are implemented).
-- API/UI, deployment, and a measured portfolio case study.
+- Independent benchmark label/judge review, repeated evaluations, broader time/token/cost enforcement and security hardening (the first 45-trial campaign is complete).
+- API/UI and deployment. The initial measured comparison and focused failure review are available in the [evaluation report](../evaluation/research_v1_results.md).
 
 Model portability has been discussed, but a dedicated provider adapter and alternate backend validation have not been implemented.
 
@@ -78,4 +81,6 @@ Module 13 live acceptance: `20261117T104559_905417Z_4e2b6590` used one follow-up
 
 Module 14 live acceptance: thread `20261117T111447_278790Z_71698170` resumed through separate processes at graph counts 2/1, 6/3 and 13/6, preserving budgets and MCP evidence. A completed-thread resume made no new model/tool attempts. All 24 deterministic check modules passed.
 
-Module 15 verification: all 25 deterministic check modules passed. Live Qwen benchmark smoke run `20261117T114856_902731Z_56607cb7` completed one question across retrieval, no-follow-up and follow-up variants. All three passed the seed rubric, with research model calls 1, 13 and 20 respectively. The full 45-trial campaign and independent label/judge review remain pending.
+Module 15 verification: all 25 deterministic check modules passed. Live Qwen benchmark smoke run `20261117T114856_902731Z_56607cb7` completed one question across retrieval, no-follow-up and follow-up variants. All three passed the seed rubric, with research model calls 1, 13 and 20 respectively. At that smoke-test milestone, the full campaign was still pending; its subsequent completion is recorded below. Independent human label/judge review remains pending.
+
+Subsequently, the full 45-trial campaign completed in `20261117T123834_829810Z_e1629ab5`. Offline successes were 12/15, 13/15 and 15/15; workflow acceptance was 15/15, 12/15 and 13/15 respectively. One offline grade failed index validation. See the [measured comparison and focused review](../evaluation/research_v1_results.md) for discrepancies, execution usage and limitations. Original records are unchanged; independent human review remains pending.

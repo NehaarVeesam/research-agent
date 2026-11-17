@@ -2,6 +2,8 @@
 
 [Module index](README.md)
 
+This note follows the learning sequence. See the [project README](../../README.md) for the complete current workflow; named live runs below are historical observations.
+
 ## Purpose
 
 Understand an agent's execution mechanism before putting it behind a framework. The model proposes a next action; Python decides whether and how to execute it.
@@ -49,7 +51,7 @@ assistant: next request or answer
 
 The next HTTP request sends accumulated history; the endpoint is not assumed to remember the previous request. Appending a message does not itself invoke the model.
 
-`call_model` sends chat-completion JSON and returns `choices[0].message`. Tool fields are omitted when the tools list is empty. A passed `model_call` is a function reference; in tests it can be replaced with a deterministic function.
+`call_model` sends chat-completion JSON and returns the response message with finish-reason and token-usage metadata. Tool fields are omitted when the tools list is empty. A passed `model_call` is a function reference; in tests it can be replaced with a deterministic function.
 
 ## Checks and limitations
 

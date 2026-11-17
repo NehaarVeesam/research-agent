@@ -1,7 +1,13 @@
 .venv/
 .env
+.env.*
+!.env.example
 __pycache__/
 *.py[cod]
 
 # Saved research runs (may contain questions and retrieved source text)
 runs/
+
+# Manual CLI output at the repository root; keep fixtures and curated exports.
+/result.json
+/result1.json

@@ -1,5 +1,7 @@
 # 12 — Semantic claim verification with Qwen
 
+[Module index](README.md) · [Current project status](../../README.md)
+
 ## Why this module exists
 
 An exact quotation can be real and still fail to support the attached claim. For example, “Scans require OCR” does not establish “This tool has 99% OCR accuracy.” Module 02 checks textual occurrence. This module asks whether the cited evidence supports the claim's meaning.
@@ -54,7 +56,7 @@ Finding indices refer to the original final report. Evidence indices refer to th
 
 ## Outcomes and budgets
 
-The original report is retained even when it fails the semantic gate. Claims are not silently deleted, weakened or rewritten. Follow-up research and repair of unsupported claims belong to the next module.
+The original report is retained even when it fails the semantic gate. Claims are not silently deleted, weakened or rewritten. Module 13 adds one bounded follow-up cycle; this module documents the verification gate itself.
 
 | Situation | Result |
 |---|---|

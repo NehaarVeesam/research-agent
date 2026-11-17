@@ -140,10 +140,14 @@ Run artifacts are ignored by Git. Keep desired results separately if sharing a p
 
 ## What remains
 
-Run and review the full matrix, improve the seed labels with independent review, inspect failure cases, and write a measured portfolio comparison. Large-scale open-web benchmarks, independent judges, statistical significance analysis and production telemetry are outside this module's implemented scope.
+The first full matrix and a focused assistant review are complete; see the [measured results](../evaluation/research_v1_results.md). Independent human review of seed labels and grades, repeated trials and broader failure analysis remain pending. Large-scale open-web benchmarks, independent judges, statistical significance analysis and production telemetry are outside this module's implemented scope.
 
 ## Verification in this implementation
 
-All 25 deterministic check modules passed. Live Qwen smoke run `20261117T114856_902731Z_56607cb7` completed the `scanbridge` question under all three variants. All reports had valid citations and passed the offline seed rubric. Research model/tool counts were 1/4 for retrieval, 13/9 without follow-up, and 20/12 with follow-up; each had one additional offline grading call. One follow-up cycle actually executed. On this simple question, extra orchestration increased execution without changing the rubric outcome. The full 45-trial campaign has **not** been run, and these grades are not independently reviewed accuracy results.
+All 25 deterministic check modules passed. Live Qwen smoke run `20261117T114856_902731Z_56607cb7` completed the `scanbridge` question under all three variants. All reports had valid citations and passed the offline seed rubric. Research model/tool counts were 1/4 for retrieval, 13/9 without follow-up, and 20/12 with follow-up; each had one additional offline grading call. One follow-up cycle actually executed. On this simple question, extra orchestration increased execution without changing the rubric outcome. At that smoke-test milestone, the full 45-trial campaign had not yet been run; subsequent campaign results are below. These grades are not independently reviewed accuracy results.
 
 Its saved `validation.md`, `summary.md`, `results.csv`, and trial journals explain the observations. Code changes invalidate resume compatibility for historical checkpoint sessions; keep the code version used by a run when planning to resume it.
+
+### Full campaign completed
+
+Run `20261117T123834_829810Z_e1629ab5` subsequently completed all 45 trials with 60/60 per-agent model/tool budgets. Offline successes were 12/15 for retrieval, 13/15 without follow-up and 15/15 with follow-up. Internal workflow acceptance was 15/15, 12/15 and 13/15 respectively; baseline acceptance has no semantic gate. One no-follow-up grade failed evidence-index validation. Two follow-up reports passed the offline rubric but were rejected internally for claims broader than their citations. These discrepancies are preserved, not resolved by rewriting scores. Read the [case review and measurement exports](../evaluation/research_v1_results.md) before using benchmark numbers externally. Independent human validation remains pending.

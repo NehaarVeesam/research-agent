@@ -1,5 +1,7 @@
 # 14 — Persistent checkpoints and process restart recovery
 
+[Module index](README.md) · [Current project status](../../README.md)
+
 ## What changed
 
 The graph can now resume pending work after the Python process exits. The normal `python -m app.workflow.runner` command uses a local SQLite LangGraph checkpointer by default. Existing `run_graph_agent()` and `run_saved_research()` APIs remain available without persistence for isolated checks; `run_checkpointed_research()` is the persistent entry point.

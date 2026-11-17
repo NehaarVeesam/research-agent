@@ -2,6 +2,8 @@
 
 [Module index](README.md)
 
+This note follows the learning sequence. See the [project README](../../README.md) for the complete current workflow; named live runs below are historical observations.
+
 ## Purpose
 
 Expose tools behind a standard discovery/invocation boundary so the consuming application need not import their implementation.

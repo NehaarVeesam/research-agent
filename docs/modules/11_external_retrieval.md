@@ -1,5 +1,7 @@
 # 11 — External retrieval through MCP
 
+[Module index](README.md) · [Current project status](../../README.md)
+
 ## Purpose
 
 The agent can now investigate external documents instead of only the three fictional examples. The planning, task, coverage, synthesis, and quote-validation architecture stays the same. The MCP server selects a source backend at startup.
@@ -100,7 +102,7 @@ The deterministic suite exercises discovery, stable IDs, cache behavior, metadat
 
 Only HTML and plain text are supported. The extractor is deliberately simple: no PDF parsing, browser rendering, login, citation-span offsets or durable snapshots. Page text is untrusted; prompts instruct the model to treat it as data, but this is not a complete prompt-injection defense. DNS checks are not connection-pinned, so they do not eliminate DNS rebinding; production deployment needs network-level egress restrictions. A domain allowlist does not establish source quality.
 
-Semantic claim verification, persistent evidence records, adaptive follow-up and checkpoint recovery remain future modules. We still expose our own MCP server; integration with an independently maintained MCP server is separate work.
+Later modules implement semantic verification (12), bounded follow-up (13) and checkpoint/source-state recovery (14). A dedicated evidence database and independently maintained third-party MCP server integration remain outside scope; this project exposes its own MCP server.
 
 ## Interview questions
 
@@ -140,7 +142,7 @@ Model requests are written before sending, followed by response/error records wi
 
 Known configured Qwen/Tavily key values are redacted in saved files. Questions, retrieved text and model output are intentionally retained; `runs/` is ignored by Git. This is not general personal-data redaction, and custom output directories need their own ignore rule if inside the repository.
 
-These records support later inspection; they are not resumable LangGraph checkpoints. Handled failures retain available graph results. Unexpected exceptions or cancellation save an outcome and already-written model records, but may lack the partial graph/tool trace. A force-killed process or disk failure cannot guarantee a final result file. Log capture is designed for one saved workflow at a time in a process.
+These JSON/log records alone are not resumable checkpoints. The normal CLI now also persists LangGraph checkpoints and source state as described in module 14. Handled failures retain available graph results. Unexpected exceptions or cancellation save an outcome and already-written model records, but may lack the partial graph/tool trace. A force-killed process or disk failure cannot guarantee a final result file. Log capture is designed for one saved workflow at a time in a process.
 
 Verification: `python -m checks.check_run_artifacts` checks success, handled failure, unexpected failure, cancellation, request/error recording, and configured-secret redaction without contacting Qwen. A live Qwen/Qwen3.8-27B run on 2026-11-17 verified planning, MCP web search/read, JSON repair, task validation and coverage. It stopped at the tool limit after 14 model calls and 15 tool calls, with one of three tasks completed and four sources read; final synthesis was not reached. Run ID: `20261117T083355_497643Z_b534789c`. Saved artifacts and a `validation.md` note are under that run folder. This is partial live validation, not a successful complete research run.
 
@@ -161,11 +163,11 @@ The current implementation adds:
 
 Implementation lives in `app/workflow/research_policy.py`, the existing workflow nodes/state/runner, `app/agent.py`, and retrieval settings. Local learning checks retain their original flow; the bounded investigation policy is enabled for the web backend. Qwen request controls apply to both entry points.
 
-Run `python -m checks.check_research_policy` for the regression cases: scope normalization, exact bounded passages, Qwen request configuration, forced conclusion, refusal of excess searches, empty-response recovery without reasoning, and synthesis reservation. A completed report can still contain unresolved tasks; `answered` means output validation passed, not that all evidence requirements were satisfied. Semantic claim verification remains pending.
+Run `python -m checks.check_research_policy` for the regression cases: scope normalization, exact bounded passages, Qwen request configuration, forced conclusion, refusal of excess searches, empty-response recovery without reasoning, and synthesis reservation. A completed report can still contain unresolved tasks; `answered` means output validation passed, not that all evidence requirements were satisfied. Semantic verification was not part of this module-11 milestone; it is now implemented in module 12.
 
 
 ### Latest live acceptance run
 
 Run `20261117T092012_810828Z_88b1b7de` completed using Qwen with **12 model calls, 8 tool requests, 6 findings and 3 explicit evidence gaps**. The first task was assessed answered and the second unresolved; final synthesis and schema/source/quote validation passed. Recorded prompts stayed below 24,509 characters, compared with approximately 251,000 in the failing run. Stored source hashes and report references were checked again from saved files.
 
-See `runs/20261117T092012_810828Z_88b1b7de/validation.md`, `result.json` and `run.log` locally. Run artifacts are ignored by Git. Earlier gap-only runs are preserved rather than overwritten. This validates one complete live workflow with honest limitations; semantic verification and broader benchmarks remain pending.
+See `runs/20261117T092012_810828Z_88b1b7de/validation.md`, `result.json` and `run.log` locally. Run artifacts are ignored by Git. Earlier gap-only runs are preserved rather than overwritten. This validates one complete live workflow with honest limitations; semantic verification and broader benchmarks were still pending at that milestone and were subsequently implemented in modules 12 and 15.

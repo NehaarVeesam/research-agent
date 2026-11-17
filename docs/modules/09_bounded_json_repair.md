@@ -2,6 +2,8 @@
 
 [Module index](README.md)
 
+This note follows the learning sequence. See the [project README](../../README.md) for the complete current workflow; named live runs below are historical observations.
+
 ## Purpose and observed failure
 
 A live model returned explanatory prose before its task JSON. `model_validate_json()` parses the complete answer, so that response failed before source checks or coverage assessment.

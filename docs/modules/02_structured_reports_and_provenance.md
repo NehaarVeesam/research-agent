@@ -2,6 +2,8 @@
 
 [Module index](README.md)
 
+This note follows the learning sequence. See the [project README](../../README.md) for the complete current workflow; named live runs below are historical observations.
+
 ## Purpose
 
 Make generated findings inspectable by code rather than accepting an arbitrary paragraph with plausible-looking citations.

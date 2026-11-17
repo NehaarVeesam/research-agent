@@ -2,6 +2,8 @@
 
 [Module index](README.md)
 
+This note follows the learning sequence. See the [project README](../../README.md) for the complete current workflow; named live runs below are historical observations.
+
 ## Purpose
 
 Make long runs visible and verify controller behavior with predictable inputs before relying on live model output.
@@ -25,11 +27,11 @@ Final JSON goes to stdout:
 python -m app.workflow.runner > result.json
 ```
 
-Progress remains visible in the terminal. Redirecting output creates a manual artifact, not an automatic checkpoint or resume mechanism. Inspect a saved run's own status and timestamps rather than assuming an old file describes the latest terminal run.
+Progress remains visible in the terminal. Redirecting stdout creates a manual artifact; the normal CLI independently saves its automatic run records and SQLite checkpoints (modules 11 and 14). Inspect a saved run's own status and timestamps rather than assuming an old file describes the latest terminal run.
 
 ## Current code settings
 
-At documentation creation, `app/workflow/runner.py` defaults to 40 model calls and 40 tool calls. The original controller defaults to six and eight respectively. `app/agent.py` uses `requests.post(..., timeout=600)`, shared by both implementations. These values changed during learning; inspect the code when reproducing runs.
+The current `app/workflow/runner.py` defaults to 60 model calls and 60 tool requests. The original controller defaults to six and eight respectively. `app/agent.py` uses `requests.post(..., timeout=600)`, shared by both implementations. These values changed during learning; inspect the code when reproducing runs.
 
 A scalar Requests timeout configures connection/read waits; it is not a strict overall wall-clock deadline for the research run. LangGraph's `6 * max_model_calls + 20` step allowance is another guard, not token/cost accounting. Failed model request attempts consume the counter.
 
@@ -54,11 +56,16 @@ Fake model functions return controlled tool requests, task answers, assessments,
 | Coverage / synthesis | `check_coverage`, `check_coverage_assessor`, `check_synthesis` |
 | Provenance | `check_validation` |
 | Complete graph / repair | `check_graph_agent` |
+| Retrieval / research policy | `check_web_retrieval`, `check_web_graph`, `check_research_policy` |
+| Saved artifacts | `check_run_artifacts` |
+| Semantic verification / follow-up | `check_claim_verification`, `check_followup` |
+| Checkpoint recovery | `check_persistence` (uses `checkpoint_worker`) |
+| Benchmark framework | `check_evaluation` |
 
-Run a module as `python -m checks.check_graph_agent` from the repository root. The 17 check modules currently use controlled inputs without real model requests. Some imports still require `.env` model configuration. A passing suite covers its written scenarios, not every possible condition or production reliability.
+Run a module as `python -m checks.check_graph_agent` from the repository root. The latest regression run passed all 25 deterministic check modules with controlled inputs and no hosted model requests. `check_web_live` is separate and contacts Wikipedia. Some imports still require `.env` model configuration. A passing suite covers its written scenarios, not every possible condition or production reliability.
 
 ## Pending observability and interview question
 
-There is no persistent tracing backend, token/cost measurement, benchmark harness, transport recovery, or guaranteed automatic partial report on failure. Connection-level exceptions can still propagate.
+Local run artifacts and SQLite checkpoint recovery are implemented (modules 11 and 14). The benchmark records tokens and optional user-priced cost estimates (module 15); no whole-run time/token/cost cap or external tracing service is implemented. General transport recovery and guaranteed final reports after every failure remain outside scope. Connection-level exceptions can still propagate.
 
 **Why both fake and live tests?** Controlled responses make controller behavior reproducible; live experiments reveal model quality, endpoint compatibility, latency, and operating failures.

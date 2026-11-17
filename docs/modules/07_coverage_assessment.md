@@ -2,6 +2,8 @@
 
 [Module index](README.md)
 
+This note follows the learning sequence. See the [project README](../../README.md) for the complete current workflow; named live runs below are historical observations.
+
 ## Purpose
 
 Judge whether the collected result addresses each task criterion, then apply an explicit controller policy. Coverage is different from factual correctness.

@@ -2,6 +2,8 @@
 
 [Module index](README.md)
 
+This note follows the learning sequence. See the [project README](../../README.md) for the complete current workflow; named live runs below are historical observations.
+
 ## Purpose
 
 Decompose the original question into explicit research questions and coverage criteria. Tool selection chooses the next action; planning defines what the investigation should address.
@@ -56,6 +58,6 @@ python -m examples.preview_plan  # Contacts the configured model endpoint.
 
 ## Boundaries and interview question
 
-The planner prompt currently hardcodes the local environment; dynamically supplied capabilities are future work. The schema does not enforce every string to be nonblank after trimming. Planning consumes model budget and does not reserve capacity for final synthesis.
+The planner accepts environment context supplied by the host for local, web or frozen evaluation sources; tools are disabled during planning. The schema does not enforce every string to be nonblank after trimming. Planning consumes the shared model budget. Bounded research reserves estimated synthesis/verification capacity later in execution; planning itself does not guarantee sufficient budget.
 
 **Why must a planner know the available tools?** A relevant plan may still be impossible to execute within the sources, permissions, and resources actually available.

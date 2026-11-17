@@ -2,6 +2,8 @@
 
 [Module index](README.md)
 
+This note follows the learning sequence. See the [project README](../../README.md) for the complete current workflow; named live runs below are historical observations.
+
 ## Purpose
 
 Turn proposed tasks into controller-managed execution records and collect a separate result for each. The plan describes intended work; tracked tasks record progress.
@@ -60,6 +62,6 @@ python -m checks.check_tool_node
 
 ## Boundaries and interview question
 
-Evidence IDs are not generated yet. Completed task records live in memory and returned output, not a database. Source IDs identify documents; future evidence IDs will identify stored passages/provenance records.
+Evidence IDs are not generated yet. Task records live in graph state and returned output; the normal CLI also persists them in SQLite checkpoints (module 14). A separate task/evidence database is not implemented. Source IDs identify documents; future evidence IDs will identify stored passages/provenance records.
 
 **Why separate collecting results from completing tasks?** A well-formed, correctly cited result may still omit a required part of the task.

@@ -1,5 +1,7 @@
 # 13 — One bounded, evidence-driven follow-up cycle
 
+[Module index](README.md) · [Current project status](../../README.md)
+
 ## Purpose
 
 The agent can now act on its own evaluation feedback. Previously, weak claim support ended the run at the verification gate. Now the controller can schedule one targeted investigation, synthesize an updated report, and verify the updated claims again.
@@ -66,7 +68,7 @@ Missing evidence recorded as an adequately addressed availability criterion does
 - Invalid JSON/report references, verifier transport failure or incomplete verification do not trigger this research retry. Their existing failure outcomes remain visible.
 - After the cycle, stop even if support or coverage remains weak. No second cycle is silently created.
 
-If the second pass hits a handled budget/validation failure, the normal run output retains the prior report in follow-up history and available task/tool records. Unexpected process failure still has the existing limitations of in-memory graph state; these snapshots are not durable resume checkpoints.
+If the second pass hits a handled budget/validation failure, the normal run output retains the prior report in follow-up history and available task/tool records. Follow-up report snapshots alone are not durable checkpoints. Module 14 adds SQLite state and source restoration for normal CLI process-restart recovery.
 
 ## Second synthesis and verification
 
@@ -128,7 +130,7 @@ Twelve focused tests cover target creation, unresolved criteria, clean reports, 
 
 **Does a supported second report prove the original claim?** No. The wording may have changed, the evidence may differ, and Qwen's assessments are fallible. Inspect the before/after records.
 
-**What remains?** A labelled benchmark, baseline comparisons, judge calibration and portfolio packaging. More sophisticated target ranking, information-gain stopping, conflict analysis and durable resume remain extensions.
+**What comes next in the learning sequence?** Module 14 adds durable resume, and module 15 adds seed-rubric evaluation and baseline comparisons. These are implemented and the initial 45-trial campaign is complete. Independent human calibration, more sophisticated target ranking, information-gain stopping and systematic conflict analysis remain extensions.
 
 
 ## Live Qwen acceptance run

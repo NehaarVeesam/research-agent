@@ -48,6 +48,7 @@ async def main():
         command=sys.executable,
         args=["-m", "app.mcp_server"],
         cwd=str(PROJECT_ROOT),
+        env={"RESEARCH_BACKEND": "local"},
     )
 
     async with Client(parameters) as client:

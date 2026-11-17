@@ -3,11 +3,13 @@ import json
 from collections.abc import Callable
 
 from app.planning.schemas import ResearchPlan
+from app.retrieval.settings import RetrievalSettings
 
 
 async def generate_plan(
     question: str,
     model_call: Callable[[list[dict], list[dict]], dict],
+    research_context: str | None = None,
 ) -> ResearchPlan:
     if not isinstance(question, str) or not question.strip():
         raise ValueError("The research question must be a nonempty string.")
@@ -29,15 +31,10 @@ async def generate_plan(
                 "You have no research tools in this step. "
                 "Return only a JSON object matching the following schema. "
                 "Do not include Markdown fences or commentary. "
-                "Research environment: PaperParse and VisionPages are fictional libraries. "
-                "The research executor can only search and read a fixed collection of "
-                "three local documents. It has no web access or external databases. "
-                "Plan only investigations possible within that collection. "
-                "If the collection lacks necessary evidence, plan to record that gap. "
-                "Do not create tasks requiring external searches or new experiments. "
+                f"{research_context or RetrievalSettings().context()} "
                 "Cover every part of the user's request, including capabilities "
                 "and limitations when requested, not only the final comparison. "
-                "For this small local collection, prefer two or three distinct tasks. "
+                "Prefer two or three distinct tasks within the available retrieval scope. "
                 "Use one to three concise coverage criteria per task. "
                 "Avoid repeating the same evidence-sufficiency assessment across tasks. "
                 f"Schema: {schema}"

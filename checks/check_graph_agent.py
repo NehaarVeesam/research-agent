@@ -159,6 +159,7 @@ class GraphAgentChecks(unittest.IsolatedAsyncioTestCase):
         result = await run_graph_agent(
             "Investigate PaperParse capabilities and accuracy evidence.",
             model_call=model,
+            verify_claims=False,
             **budgets,
         )
         self.assertEqual(result["model_calls"], len(model.phases))

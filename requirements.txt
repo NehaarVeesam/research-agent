@@ -3,3 +3,4 @@ python-dotenv
 pydantic>=2,<3
 mcp>=2,<3
 langgraph
+langgraph-checkpoint-sqlite>=3,<4

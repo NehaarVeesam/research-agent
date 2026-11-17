@@ -4,6 +4,16 @@ from typing import Annotated, Literal, TypedDict, NotRequired
 class ResearchState(TypedDict):
     # Conversation history: new messages append.
     messages: Annotated[list[dict], operator.add]
+    followup_count: NotRequired[int]
+    max_followup_cycles: NotRequired[int]
+    followup_history: NotRequired[list[dict]]
+    followup_decision: NotRequired[dict]
+    verify_claims: NotRequired[bool]
+    bounded_web: NotRequired[bool]
+    task_model_counts: NotRequired[dict[str, int]]
+    task_tool_counts: NotRequired[dict[str, int]]
+    plan_scope_adjustments: NotRequired[list[str]]
+    research_context: NotRequired[str]
     question: NotRequired[str]
     plan: NotRequired[dict]
 

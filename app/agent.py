@@ -29,11 +29,16 @@ def call_model(messages: list[dict], tools: list[dict]) -> dict:
         "model": MODEL,
         "messages": messages,
         "temperature": 0,
+        "max_tokens": 4096,
+        "chat_template_kwargs": {"enable_thinking": False},
     }
 
     if tools:
         payload["tools"] = tools
         payload["tool_choice"] = "auto"
+
+    if not tools:
+        payload["response_format"] = {"type": "json_object"}
 
     response = requests.post(
         f"{BASE_URL}/chat/completions",
@@ -44,7 +49,9 @@ def call_model(messages: list[dict], tools: list[dict]) -> dict:
 
     response.raise_for_status()
 
-    return response.json()["choices"][0]["message"]
+    choice = response.json()["choices"][0]
+    return {**choice["message"], "finish_reason": choice.get("finish_reason"),
+            "usage": response.json().get("usage")}
 
 
 async def run_research_loop(
@@ -188,6 +195,7 @@ async def run_agent(
         command=sys.executable,
         args=["-m", "app.mcp_server"],
         cwd=str(PROJECT_ROOT),
+        env={"RESEARCH_BACKEND": "local"},
     )
 
     async with Client(server_parameters) as client:

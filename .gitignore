@@ -2,3 +2,6 @@
 .env
 __pycache__/
 *.py[cod]
+
+# Saved research runs (may contain questions and retrieved source text)
+runs/

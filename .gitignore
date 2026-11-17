@@ -11,3 +11,6 @@ runs/
 # Manual CLI output at the repository root; keep fixtures and curated exports.
 /result.json
 /result1.json
+
+# Local planning reference; excluded from the published project.
+/Project_02_Autonomous_Research_Agent_MCP_Blueprint.md

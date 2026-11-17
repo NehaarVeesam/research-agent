@@ -149,5 +149,3 @@ Use `python -m package.module` from the repository root so sibling packages reso
 ## Scope and extensions
 
 The CLI research workflow, evidence checks, one follow-up cycle, local checkpoint recovery, evaluation framework and initial results are complete for this portfolio scope. Optional extensions include independent judge calibration, repeated/broader benchmarks, richer evidence records, systematic conflicts, third-party MCP servers, and an API/UI/deployment. FastAPI, PostgreSQL, Langfuse and Docker are not part of this implementation.
-
-The [original blueprint](Project_02_Autonomous_Research_Agent_MCP_Blueprint.md) is a broader design reference, not a claim that every proposed feature shipped.
